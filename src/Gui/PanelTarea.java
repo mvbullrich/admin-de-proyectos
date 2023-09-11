@@ -40,7 +40,7 @@ public class PanelTarea extends JPanel {
     JButton jButtonAtras = new JButton("Atras");
     JButton jButtonSalir = new JButton("Salir");
 
-    JButton jButtonGuardar = new JButton("Guardar");;
+    JButton jButtonGuardar = new JButton("Guardar");
     JButton jButtonBuscar = new JButton("Buscar");
     JButton jButtonEliminar = new JButton("Eliminar");
     JButton jButtonModificar = new JButton("Modificar");
@@ -50,12 +50,12 @@ public class PanelTarea extends JPanel {
 
     JPanel jPanelBotones;
 
-    public PanelTarea(PanelManager panel){
+    public PanelTarea(PanelManager panel) {
         this.panel = panel;
         mostrarOpciones();
     }
 
-    public void mostrarOpciones(){
+    public void mostrarOpciones() {
         panelTarea = new JPanel();
         panelTarea.setLayout(new GridLayout(0, 1));
 
@@ -155,7 +155,7 @@ public class PanelTarea extends JPanel {
         });
     }
 
-    public void formularioGuardar(){
+    public void formularioGuardar() {
         tareaService = new TareaService();
         panelTarea = new JPanel();
         panelTarea.setLayout(new GridLayout(4, 2));
@@ -198,18 +198,17 @@ public class PanelTarea extends JPanel {
         });
     }
 
-    public void guardarTarea(){
+    public void guardarTarea() {
         Tarea tarea = new Tarea();
-        try{
+        try {
             tarea.setTitulo(jTextFieldTitulo.getText());
             tarea.setDescripcion(jTextFieldDescripcion.getText());
             tarea.setEstimacion(Integer.parseInt(jTextFieldEstimacion.getText()));
             tarea.setHorasReales(Integer.parseInt((jTextFieldHorasReales.getText())));
             tarea.setEmpleado_id(0);
-            if(tarea.getTitulo().isEmpty() || tarea.getDescripcion().isEmpty()){
+            if (tarea.getTitulo().isEmpty() || tarea.getDescripcion().isEmpty()) {
                 throw new IllegalArgumentException();
-            }
-            else{
+            } else {
                 tareaService.guardarTarea(tarea);
                 JOptionPane.showMessageDialog(null, "Tarea guardada exitosamente");
             }
@@ -220,7 +219,7 @@ public class PanelTarea extends JPanel {
         }
     }
 
-    public void formularioEliminar(){
+    public void formularioEliminar() {
         tareaService = new TareaService();
         panelTarea = new JPanel();
         panelTarea.setLayout(new GridLayout(1, 1));
@@ -256,11 +255,11 @@ public class PanelTarea extends JPanel {
         });
     }
 
-    public void eliminarTarea(){
+    public void eliminarTarea() {
         try {
             int idTarea = Integer.parseInt(jTextFieldId.getText());
             Tarea tarea = tareaService.buscarTarea(idTarea);
-            if(tarea != null) {
+            if (tarea != null) {
                 JOptionPane.showMessageDialog(null, "Tarea encontrada:\n" +
                         "ID: " + idTarea + "\n" +
                         "Título: " + tarea.getDescripcion() + "\n" +
@@ -287,10 +286,10 @@ public class PanelTarea extends JPanel {
         }
     }
 
-    public void formularioModificar(){
+    public void formularioModificar() {
         tareaService = new TareaService();
         panelTarea = new JPanel();
-        panelTarea.setLayout(new GridLayout(6,2));
+        panelTarea.setLayout(new GridLayout(6, 2));
 
         jButtonModificar = new JButton("Modificar");
         jPanelBotones = new JPanel();
@@ -313,14 +312,14 @@ public class PanelTarea extends JPanel {
                 try {
                     int idTarea = Integer.parseInt(jTextFieldId.getText());
                     Tarea tarea = tareaService.buscarTarea(idTarea);
-                    if (tarea != null){
+                    if (tarea != null) {
                         modificarTarea(tarea);
-                    } else{
+                    } else {
                         JOptionPane.showMessageDialog(null, "No se encontró ninguna tarea con ese ID");
                     }
-                } catch (NumberFormatException ex){
+                } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(null, "Ingrese un ID de tarea válido");
-                } catch (ServiceException ex){
+                } catch (ServiceException ex) {
                     JOptionPane.showMessageDialog(null, "Error al buscar la tarea");
                 }
             }
@@ -336,10 +335,10 @@ public class PanelTarea extends JPanel {
         });
     }
 
-    public void modificarTarea(Tarea tarea){
+    public void modificarTarea(Tarea tarea) {
         tareaService = new TareaService();
         panelTarea = new JPanel();
-        panelTarea.setLayout(new GridLayout(6,2));
+        panelTarea.setLayout(new GridLayout(6, 2));
 
         jTextFieldTitulo = new JTextField(tarea.getTitulo());
         jTextFieldDescripcion = new JTextField(tarea.getDescripcion());
@@ -368,21 +367,21 @@ public class PanelTarea extends JPanel {
         add(jPanelBotones, BorderLayout.SOUTH);
 
         int opcion = JOptionPane.showOptionDialog(null, panelTarea, "Modificar Tarea", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
-        if(opcion == JOptionPane.OK_OPTION){
+        if (opcion == JOptionPane.OK_OPTION) {
             tarea.setTitulo(jTextFieldTitulo.getText());
             tarea.setDescripcion(jTextFieldDescripcion.getText());
             tarea.setEstimacion(Integer.parseInt(jTextFieldEstimacion.getText()));
             tarea.setHorasReales(Integer.parseInt(jTextFieldHorasReales.getText()));
-            try{
+            try {
                 tareaService.modificar(tarea);
                 JOptionPane.showMessageDialog(null, "La tarea se modificó exitosamente");
-            } catch (ServiceException ex){
+            } catch (ServiceException ex) {
                 JOptionPane.showMessageDialog(null, "Error al modificar la tarea" + ex.getMessage());
             }
         }
     }
 
-    public void formularioBuscar(){
+    public void formularioBuscar() {
         tareaService = new TareaService();
         panelTarea = new JPanel();
         panelTarea.setLayout(new GridLayout(1, 1));
@@ -418,11 +417,11 @@ public class PanelTarea extends JPanel {
         });
     }
 
-    public void buscarTarea(){
+    public void buscarTarea() {
         try {
             int idTarea = Integer.parseInt(jTextFieldId.getText());
             Tarea tarea = tareaService.buscarTarea(idTarea);
-            if(tarea != null) {
+            if (tarea != null) {
                 JOptionPane.showMessageDialog(null, "Tarea encontrada:\n" +
                         "ID: " + idTarea + "\n" +
                         "Título: " + tarea.getDescripcion() + "\n" +
@@ -443,12 +442,13 @@ public class PanelTarea extends JPanel {
     JLabel jLabelTarea;
     JLabel jLabelEmpleadosDisponibles;
     JButton jButtonLimpiar = new JButton("Limpiar");
-    public void formularioAsignarEmpleado(){
+
+    public void formularioAsignarEmpleado() {
         jLabelTarea = new JLabel("Tarea: ");
         jComboBoxTarea = new JComboBox<>();
 
         jLabelEmpleadosDisponibles = new JLabel("Empleados:");
-        jComboBoxEmpleado = new  JComboBox<>();
+        jComboBoxEmpleado = new JComboBox<>();
 
         jButtonAsignar = new JButton("Asignar");
 
@@ -516,16 +516,16 @@ public class PanelTarea extends JPanel {
         });
     }
 
-    public void asignarEmpleado(){
+    public void asignarEmpleado() {
         Tarea tareaSeleccionada = (Tarea) jComboBoxTarea.getSelectedItem();
         Empleado empleadoSeleccionado = (Empleado) jComboBoxEmpleado.getSelectedItem();
 
-        if(tareaSeleccionada != null && empleadoSeleccionado != null){
+        if (tareaSeleccionada != null && empleadoSeleccionado != null) {
             int tareaId = tareaSeleccionada.getId();
             int empleadoId = empleadoSeleccionado.getId();
 
             try {
-                tareaService.asignarEmpleado(tareaId ,empleadoId);
+                tareaService.asignarEmpleado(tareaId, empleadoId);
                 JOptionPane.showMessageDialog(null, "Empleado asignado a la tarea correctamente");
                 limpiarTareas();
             } catch (ServiceException ex) {
@@ -543,13 +543,13 @@ public class PanelTarea extends JPanel {
         jComboBoxTarea.setSelectedIndex(-1);
     }
 
-    public void mostrarTodas(){
+    public void mostrarTodas() {
         tareaService = new TareaService();
         try {
             ArrayList<Tarea> tareas = tareaService.obtenerTodasLasTareas();
             StringBuilder tareasInfo = new StringBuilder("Lista de tareas:\n\n");
 
-            for(Tarea tarea:tareas){
+            for (Tarea tarea : tareas) {
                 tareasInfo.append("ID: ").append(tarea.getId()).append("\n");
                 tareasInfo.append("Titulo: ").append(tarea.getTitulo()).append("\n");
                 tareasInfo.append("Descripcion: ").append(tarea.getDescripcion()).append("\n");
@@ -566,7 +566,7 @@ public class PanelTarea extends JPanel {
 
             JScrollPane scrollPane = new JScrollPane(textArea);
             JOptionPane.showMessageDialog(null, scrollPane, "Tareas", JOptionPane.INFORMATION_MESSAGE);
-        } catch (ServiceException e){
+        } catch (ServiceException e) {
             JOptionPane.showMessageDialog(null, "Error al obtener la lista de tareas: " + e.getMessage());
         }
     }
