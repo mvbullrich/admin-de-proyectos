@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="h2-2.1.214">
+    <CLASSES>
+      <root url="jar:///opt/homebrew/Cellar/h2/2.2.222/libexec/bin/h2-2.2.222.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
