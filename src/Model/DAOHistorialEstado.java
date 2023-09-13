@@ -4,12 +4,10 @@ import Controlador.HistorialEstado;
 
 import java.sql.*;
 import java.util.ArrayList;
-public class DAOHistorialEstado implements DAO<HistorialEstado>{
-    private String DB_JDBC_DRIVER = "org.h2.Driver";
-    private String DB_URL = "jdbc:h2:tcp://localhost/~/base";
-    private String DB_USER = "sa";
-    private String DB_PASSWORD = "";
 
+import static Model.Config.*;
+
+public class DAOHistorialEstado implements DAO<HistorialEstado>{
     @Override
     public void guardar(HistorialEstado elemento) throws DAOException{
         Connection connection = null;

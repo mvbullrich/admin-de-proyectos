@@ -7,12 +7,9 @@ import Service.ServiceException;
 import java.sql.*;
 import java.util.ArrayList;
 
-public class DAOEmpleado implements DAO<Empleado>{
-    private String DB_JDBC_DRIVER = "org.h2.Driver";
-    private String DB_URL = "jdbc:h2:tcp://localhost/~/base";
-    private String DB_USER = "sa";
-    private String DB_PASSWORD = "";
+import static Model.Config.*;
 
+public class DAOEmpleado implements DAO<Empleado>{
     @Override
     public void guardar(Empleado elemento) throws DAOException {
         Connection connection = null;

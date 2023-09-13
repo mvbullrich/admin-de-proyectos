@@ -440,11 +440,14 @@ public class PanelTarea extends JPanel {
                         "Estimacion: " + tarea.getEstimacion());
             } else {
                 JOptionPane.showMessageDialog(null, "No se encontró ninguna tarea con ese ID");
+                jTextFieldId.setText("");
             }
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(null, "Ingrese un ID de tarea válido");
+            jTextFieldId.setText("");
         } catch (ServiceException ex) {
             JOptionPane.showMessageDialog(null, "Error al buscar la tarea");
+            jTextFieldId.setText("");
         }
     }
 
@@ -467,7 +470,7 @@ public class PanelTarea extends JPanel {
         EmpleadoService empleadoService = new EmpleadoService();
 
         panelTarea = new JPanel();
-        panelTarea.setLayout(new GridLayout(1, 1));
+        panelTarea.setLayout(new GridLayout(2, 2));
 
         jPanelBotones = new JPanel();
 
@@ -641,8 +644,20 @@ public class PanelTarea extends JPanel {
                 tareasInfo.append("Descripcion: ").append(tarea.getDescripcion()).append("\n");
                 tareasInfo.append("Estimacion: ").append(tarea.getEstimacion()).append("\n");
                 tareasInfo.append("Horas Reales: ").append(tarea.getHorasReales()).append("\n");
-                tareasInfo.append("ID de empleado asignado: ").append(tarea.getEmpleado_id()).append("\n");
-                tareasInfo.append("ID del proyecto: ").append(tarea.getIdProyecto()).append("\n");
+
+                int idEmpleado = tarea.getEmpleado_id();
+                if (idEmpleado != 0) {
+                    tareasInfo.append("ID de empleado asignado: ").append(tarea.getEmpleado_id()).append("\n");
+                } else {
+                    tareasInfo.append("-No hay ningun empleado asignado a esta tarea.\n");
+                }
+
+                int proyectoId = tarea.getIdProyecto();
+                if (proyectoId != 0){
+                    tareasInfo.append("ID del proyecto: ").append(tarea.getIdProyecto()).append("\n");
+                } else {
+                    tareasInfo.append("-Esta tarea no esta asignada a ningun proyecto.\n");
+                }
 
                 tareasInfo.append("\n");
             }

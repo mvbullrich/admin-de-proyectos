@@ -7,13 +7,9 @@ import Service.ServiceException;
 
 import java.sql.*;
 import java.util.ArrayList;
+import static Model.Config.*;
 
 public class DAOProyecto implements DAO<Proyecto> {
-    private String DB_JDBC_DRIVER = "org.h2.Driver";
-    private String DB_URL = "jdbc:h2:tcp://localhost/~/base";
-    private String DB_USER = "sa";
-    private String DB_PASSWORD = "";
-
     @Override
     public void guardar(Proyecto elemento) throws DAOException {
         Connection connection = null;
@@ -205,7 +201,11 @@ public class DAOProyecto implements DAO<Proyecto> {
             for (Tarea tarea : tareas){
                 int idEmpleado = tarea.getEmpleado_id();
                 Empleado empleado = daoEmpleado.buscar(idEmpleado);
-                costoDinero += empleado.getCostoPorHora() * tarea.getHorasReales();
+                if (empleado != null){
+                    costoDinero += empleado.getCostoPorHora() * tarea.getHorasReales();
+                } else {
+                    System.out.printf("No hay ningun empleado asignado, no se puede calcular el costo en dinero");
+                }
             }
         } catch (DAOException e){
             throw new DAOException(e.getMessage());

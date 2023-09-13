@@ -6,14 +6,9 @@ import Controlador.Tarea;
 
 import java.sql.*;
 import java.util.ArrayList;
+import static Model.Config.*;
 
 public class DAOTarea implements DAO<Tarea> {
-    private String DB_JDBC_DRIVER = "org.h2.Driver";
-    private String DB_URL = "jdbc:h2:tcp://localhost/~/base";
-    private String DB_USER = "sa";
-    private String DB_PASSWORD = "";
-
-
     @Override
     public void guardar(Tarea elemento) throws DAOException {
         Connection connection = null;

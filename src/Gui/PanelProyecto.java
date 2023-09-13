@@ -681,7 +681,7 @@ public class PanelProyecto extends JPanel{
                 proyectosInfo.append("Fecha Inicio: ").append(proyecto.getFechaInicio()).append("\n");
                 proyectosInfo.append("Fecha Fin: ").append(proyecto.getFechaFin()).append("\n");
 
-                int idProyecto = proyecto.getId(); // Obtener el ID del proyecto actual
+                int idProyecto = proyecto.getId();
                 ArrayList<Tarea> tareasAsignadas = tareaService.obtenerTareasAsignadas(idProyecto);
 
                 if (!tareasAsignadas.isEmpty()) {
