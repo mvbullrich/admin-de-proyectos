@@ -14,6 +14,7 @@ public class DAOEmpleado implements DAO<Empleado>{
     public void guardar(Empleado elemento) throws DAOException {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
         try {
             Class.forName(DB_JDBC_DRIVER);
             connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);

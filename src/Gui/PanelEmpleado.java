@@ -163,24 +163,34 @@ public class PanelEmpleado extends JPanel {
         });
     }
 
-    public void guardarEmpleado(){
+    public void guardarEmpleado() {
         Empleado empleado = new Empleado();
-        try{
-            empleado.setId(Integer.parseInt(jTextFieldId.getText()));
+        try {
+            int idEmpleado = Integer.parseInt(jTextFieldId.getText());
+            empleado.setId(idEmpleado);
             empleado.setNombre(jTextFieldNombre.getText());
             empleado.setCostoPorHora(Double.parseDouble(jTextFieldCostoHora.getText()));
             empleado.setDisponible(true);
-            if (empleado.getNombre().isEmpty()){
-                throw new IllegalArgumentException();
-            }
-            else {
+
+            if (idEmpleado <= 0) {
+                JOptionPane.showMessageDialog(this,"El ID debe ser un número positivo");
+            } else if (empleadoService.buscarEmpleado(idEmpleado) != null){
+                JOptionPane.showMessageDialog(this, "Ese ID ya esta uso, por favor utilice otro");
+            } else if (empleado.getNombre().isEmpty()){
+                JOptionPane.showMessageDialog(this, "El nombre no puede estar vacío");
+            } else {
                 empleadoService.guardarEmpleado(empleado);
-                JOptionPane.showMessageDialog(null, "Empleado guardado exitosamente");
+                JOptionPane.showMessageDialog(this, "Empleado guardado exitosamente");
+                jTextFieldId.setText("");
+                jTextFieldNombre.setText("");
+                jTextFieldCostoHora.setText("");
             }
-        } catch (ServiceException serEx){
-            JOptionPane.showMessageDialog(null, "No se pudo guardar");
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "El ID debe ser un número válido");
+        } catch (ServiceException serEx) {
+            JOptionPane.showMessageDialog(this, "No se pudo guardar el empleado: " + serEx.getMessage());
         } catch (IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(null, "Error. Se deben llenar todos los campos con valores correctos");
+            JOptionPane.showMessageDialog(this, "Error. Se deben llenar todos los campos con valores correctos.");
         }
     }
 
