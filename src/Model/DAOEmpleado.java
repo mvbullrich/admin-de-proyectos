@@ -2,6 +2,7 @@ package Model;
 
 import Controlador.Empleado;
 import Controlador.Proyecto;
+import Service.ServiceException;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -168,6 +169,32 @@ public class DAOEmpleado implements DAO<Empleado>{
                 empleados.add(empleado);
             }
             return empleados;
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new DAOException(e.getMessage());
+        }
+    }
+
+    public ArrayList<Empleado> obtenerEmpleadosAsignados() throws DAOException{
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        try {
+            Class.forName(DB_JDBC_DRIVER);
+            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            preparedStatement = connection.prepareStatement("SELECT e.* FROM empleado e INNER JOIN Tarea t ON e.id = t.empleado_id WHERE t.empleado_id IS NOT NULL");
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            ArrayList<Empleado> empleadosAsignados = new ArrayList<>();
+
+            while (resultSet.next()) {
+                Empleado empleado = new Empleado();
+                empleado.setId(resultSet.getInt("id"));
+                empleado.setNombre(resultSet.getString("nombre"));
+                empleado.setCostoPorHora(resultSet.getInt("costoporhora"));
+                empleado.setDisponible(resultSet.getBoolean("disponible"));
+
+                empleadosAsignados.add(empleado);
+            }
+            return empleadosAsignados;
         } catch (SQLException | ClassNotFoundException e) {
             throw new DAOException(e.getMessage());
         }

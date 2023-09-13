@@ -1,5 +1,6 @@
 package Service;
 
+import Controlador.Empleado;
 import Controlador.Tarea;
 import Model.DAO;
 import Model.DAOTarea;
@@ -62,18 +63,18 @@ public class TareaService {
         }
     }
 
-    public ArrayList<Tarea> obtenerTareasSinEmpleadosAsignados() throws ServiceException {
+    public void desasignarEmpleado(Empleado empleado) throws ServiceException{
         try {
-            return daoTarea.obtenerTareasSinEmpleadosAsignados();
+            daoTarea.desasignarEmpleado(empleado);
+            System.out.println("Empleado desasignado de la tarea");
         } catch (DAOException e) {
             throw new ServiceException(e.getMessage());
         }
     }
 
-    public void eliminarEmpleado(int id) throws ServiceException {
+    public ArrayList<Tarea> obtenerTareasSinEmpleadosAsignados() throws ServiceException {
         try {
-            daoTarea.eliminarEmpleado(id);
-            System.out.println("Empleado eliminado de la tarea");
+            return daoTarea.obtenerTareasSinEmpleadosAsignados();
         } catch (DAOException e) {
             throw new ServiceException(e.getMessage());
         }

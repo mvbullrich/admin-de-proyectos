@@ -159,6 +159,25 @@ public class DAOTarea implements DAO<Tarea> {
         }
     }
 
+    public void desasignarEmpleado(Empleado empleado) throws DAOException {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        try {
+            Class.forName(DB_JDBC_DRIVER);
+            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            preparedStatement = connection.prepareStatement("UPDATE tarea SET empleado_id = NULL WHERE empleado_id = ?");
+            preparedStatement.setInt(1, empleado.getId());
+            preparedStatement.executeUpdate();
+
+            preparedStatement = connection.prepareStatement("UPDATE empleado SET disponible = TRUE WHERE id = ?");
+            preparedStatement.setInt(1, empleado.getId());
+            preparedStatement.executeUpdate();
+
+        } catch (SQLException | ClassNotFoundException e){
+            throw new DAOException(e.getMessage());
+        }
+    }
+
     public ArrayList<Tarea> obtenerTareasSinEmpleadosAsignados() throws DAOException {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
@@ -181,36 +200,6 @@ public class DAOTarea implements DAO<Tarea> {
             }
             return tareasSinEmpleadosAsignados;
         } catch (SQLException | ClassNotFoundException e) {
-            throw new DAOException(e.getMessage());
-        }
-    }
-
-    public void eliminarEmpleado(int id) throws DAOException {
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        try {
-            Class.forName(DB_JDBC_DRIVER);
-            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-
-            preparedStatement = connection.prepareStatement("SELECT empleado_id FROM Tarea where id=?");
-            preparedStatement.setInt(1, id);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            int empleadoId = 0;
-            if (resultSet.next()) {
-                empleadoId = resultSet.getInt("empleado_id");
-            }
-
-            preparedStatement = connection.prepareStatement("UPDATE Tarea SET empleado_id=NULL where id=?");
-            preparedStatement.setInt(1, id);
-            int res = preparedStatement.executeUpdate();
-            System.out.println("Se elimino el empleado" + res);
-
-            preparedStatement = connection.prepareStatement("UPDATE Empleado SET disponible=true WHERE id=?");
-            preparedStatement.setInt(1, empleadoId);
-            int res2 = preparedStatement.executeUpdate();
-            System.out.println("Se actualizó la disponibilidad del empleado" + res2);
-
-        } catch (ClassNotFoundException | SQLException e) {
             throw new DAOException(e.getMessage());
         }
     }

@@ -47,6 +47,7 @@ public class PanelTarea extends JPanel {
     JButton jButtonAsignar = new JButton("Asignar");
     JButton jButtonEstados;
     JButton jButtonMostrar;
+    JButton jButtonDesasignar = new JButton("Desasignar empleado");
 
     JPanel jPanelBotones;
 
@@ -78,6 +79,7 @@ public class PanelTarea extends JPanel {
         jPanelBotones.add(jButtonOpcionModificar);
         jPanelBotones.add(jButtonMostrar);
         jPanelBotones.add(jButtonOpcionAsignar);
+        jPanelBotones.add(jButtonDesasignar);
         jPanelBotones.add(jButtonEstados);
         jPanelBotones.add(jButtonAtras);
         add(jPanelBotones, BorderLayout.CENTER);
@@ -150,6 +152,15 @@ public class PanelTarea extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 PanelTarea panelTarea1 = new PanelTarea(panel);
                 panelTarea1.mostrarTodas();
+                panel.mostrar(panelTarea1);
+            }
+        });
+
+        jButtonDesasignar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                PanelTarea panelTarea1 = new PanelTarea(panel);
+                panelTarea1.panelDesasignar();
                 panel.mostrar(panelTarea1);
             }
         });
@@ -542,6 +553,81 @@ public class PanelTarea extends JPanel {
         jComboBoxEmpleado.setSelectedIndex(-1);
         jComboBoxTarea.setSelectedIndex(-1);
     }
+
+    public void panelDesasignar(){
+        tareaService = new TareaService();
+        EmpleadoService empleadoService = new EmpleadoService();
+
+        panelTarea = new JPanel();
+        panelTarea.setLayout(new GridLayout(2, 2));
+
+        jPanelBotones = new JPanel();
+        jLabelEmpleado = new JLabel("Seleccionar empleado:");
+        jComboBoxEmpleado = new JComboBox<>();
+        ArrayList<Empleado> empleados = new ArrayList<>();
+
+        try {
+            empleados = empleadoService.obtenerEmpleadosAsignados();
+            for(Empleado empleado : empleados) {
+                jComboBoxEmpleado.addItem(empleado);
+            }
+        } catch (ServiceException e) {
+            JOptionPane.showMessageDialog(null, "Error al obtener los empleados: " + e.getMessage());
+        }
+
+        panelTarea.add(jLabelEmpleado);
+        panelTarea.add(jComboBoxEmpleado);
+
+        setLayout(new BorderLayout());
+        add(panelTarea, BorderLayout.CENTER);
+
+        jPanelBotones.add(jButtonDesasignar);
+        jPanelBotones.add(jButtonSalir);
+        add(jPanelBotones, BorderLayout.SOUTH);
+
+        jButtonDesasignar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                desasignarEmpleado();
+            }
+        });
+
+        jButtonSalir.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                PanelTarea panelTarea1 = new PanelTarea(panel);
+                panelTarea1.mostrarOpciones();
+                panel.mostrar(panelTarea1);
+            }
+        });
+    }
+
+    public void desasignarEmpleado() {
+        Empleado empleadoSeleccionado = (Empleado) jComboBoxEmpleado.getSelectedItem();
+
+        if (empleadoSeleccionado != null) {
+            int confirmacion = JOptionPane.showConfirmDialog(
+                    null,
+                    "¿Seguro que desea desasignar a " + empleadoSeleccionado.getNombre() + " de su tarea?\n" +
+                            "ID: " + empleadoSeleccionado.getId() + "\n" +
+                            "Costo por hora: " + empleadoSeleccionado.getCostoPorHora(),
+                    "Confirmación",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            if (confirmacion == JOptionPane.YES_OPTION) {
+                try {
+                    tareaService.desasignarEmpleado(empleadoSeleccionado);
+                    JOptionPane.showMessageDialog(this, "Empleado desasignado");
+                } catch (ServiceException ex) {
+                    JOptionPane.showMessageDialog(null, "Error al desasignar empleado: " + ex.getMessage());
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Seleccione un empleado");
+        }
+    }
+
 
     public void mostrarTodas() {
         tareaService = new TareaService();

@@ -494,7 +494,7 @@ public class PanelProyecto extends JPanel{
         TareaService tareaService = new TareaService();
         setLayout(new BorderLayout());
 
-        JPanel topPanel = new JPanel(new FlowLayout());
+        JPanel topPanel = new JPanel(new GridLayout(2, 3));
         JLabel jLabelProyecto = new JLabel("Seleccionar Proyecto:");
         jComboBoxProyectos = new JComboBox<>();
         jComboBoxTareas = new JComboBox<>();
@@ -654,7 +654,7 @@ public class PanelProyecto extends JPanel{
                         limpiar();
                     }
                 } else {
-                    JOptionPane.showMessageDialog(this, "Seleccione un proyecto y al menos una tarea.");
+                    JOptionPane.showMessageDialog(this, "No se ha desasignado la tarea");
                     limpiar();
                 }
             } catch (ServiceException ex) {

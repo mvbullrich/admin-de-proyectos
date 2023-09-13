@@ -66,4 +66,12 @@ public class EmpleadoService {
             throw new ServiceException(e.getMessage());
         }
     }
+
+    public ArrayList<Empleado> obtenerEmpleadosAsignados() throws ServiceException{
+        try {
+            return daoEmpleado.obtenerEmpleadosAsignados();
+        } catch (DAOException e) {
+            throw new ServiceException(e.getMessage());
+        }
+    }
 }
