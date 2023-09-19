@@ -33,11 +33,6 @@ public class DAOHistorialEstado implements DAO<HistorialEstado>{
     }
 
     @Override
-    public void modificar(HistorialEstado elemento) throws DAOException {
-
-    }
-
-    @Override
     public HistorialEstado buscar(int id) throws DAOException {
         return null;
     }
@@ -91,4 +86,21 @@ public class DAOHistorialEstado implements DAO<HistorialEstado>{
         return historiales;
     }
 
+    @Override
+    public void modificar(HistorialEstado elemento) throws DAOException{
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        try {
+            Class.forName(DB_JDBC_DRIVER);
+            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            preparedStatement = connection.prepareStatement("UPDATE historialestado SET estado=?, fecha=?, id_responsable=? WHERE id_tarea=?");
+            preparedStatement.setString(1, elemento.getEstado());
+            preparedStatement.setDate(2, new java.sql.Date(elemento.getFecha().getTime()));
+            preparedStatement.setInt(3, elemento.getIdResponsable());
+            int res = preparedStatement.executeUpdate();
+            System.out.println("Se modificaron " + res);
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DAOException(e.getMessage());
+        }
+    }
 }

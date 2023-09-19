@@ -333,4 +333,31 @@ public class DAOTarea implements DAO<Tarea> {
             throw new DAOException(e.getMessage());
         }
     }
+
+    public ArrayList<Tarea> obtenerTareasSinEstado() throws DAOException {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        try {
+            Class.forName(DB_JDBC_DRIVER);
+            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            preparedStatement = connection.prepareStatement("SELECT t.* FROM Tarea t LEFT JOIN HistorialEstado h ON t.id = h.id_tarea WHERE h.id IS NULL;");
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            ArrayList<Tarea> tareas = new ArrayList<>();
+
+            while (resultSet.next()){
+                Tarea tarea = new Tarea();
+                tarea.setId(resultSet.getInt("id"));
+                tarea.setTitulo(resultSet.getString("titulo"));
+                tarea.setDescripcion(resultSet.getString("descripcion"));
+                tarea.setEstimacion(resultSet.getInt("estimacion"));
+                tarea.setHorasReales(resultSet.getInt("horasReales"));
+
+                tareas.add(tarea);
+            }
+            return tareas;
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new DAOException(e.getMessage());
+        }
+    }
 }

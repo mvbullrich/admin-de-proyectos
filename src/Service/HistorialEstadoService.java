@@ -30,4 +30,12 @@ public class HistorialEstadoService {
             throw new ServiceException(e.getMessage());
         }
     }
+
+    public void modificar(HistorialEstado historial) throws ServiceException{
+        try{
+            daoHistorialEstado.modificar(historial);
+        } catch (DAOException e) {
+            throw new ServiceException(e.getMessage());
+        }
+    }
 }

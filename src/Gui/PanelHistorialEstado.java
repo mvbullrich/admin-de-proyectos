@@ -1,6 +1,7 @@
 package Gui;
 
 import Controlador.Empleado;
+import Controlador.EstadoTarea;
 import Controlador.HistorialEstado;
 import Controlador.Tarea;
 import Service.EmpleadoService;
@@ -22,19 +23,20 @@ public class PanelHistorialEstado extends JPanel {
 
     JLabel jLabelTareas = new JLabel();
     JComboBox<Tarea> jComboBoxTareas = new JComboBox<>();
-
-    JLabel jLabelEstado = new JLabel("Estado:");
-    JTextField jTextFieldEstado = new JTextField();
     JLabel jLabelFecha = new JLabel("Fecha: (yyyy-MM-dd)");
     JTextField jTextFieldFecha = new JTextField();
     JLabel jLabelResponsable = new JLabel("Empleado responsable:");
     JComboBox jComboBoxEmpleado = new JComboBox<>();
+    JLabel jLabelEstados = new JLabel();
+    JComboBox jComboBoxEstados = new JComboBox<>();
 
     JPanel jPanelBotones;
     JButton jButtonActualizar;
     JButton jButtonGuardarEstado;
     JButton jButtonAtras;
     JButton jButtonMostrar;
+    JButton jButtonKanban = new JButton("Mostrar tablero kanban");
+    JButton jButtonModificar = new JButton("Modificar un estado");
 
     public PanelHistorialEstado(PanelManager panel) {
         this.panel = panel;
@@ -57,6 +59,8 @@ public class PanelHistorialEstado extends JPanel {
 
         jPanelBotones.add(jButtonActualizar);
         jPanelBotones.add(jButtonMostrar);
+        jPanelBotones.add(jButtonKanban);
+        jPanelBotones.add(jButtonModificar);
         jPanelBotones.add(jButtonAtras);
         add(jPanelBotones, BorderLayout.CENTER);
 
@@ -84,6 +88,20 @@ public class PanelHistorialEstado extends JPanel {
                 panel.mostrar(panelHistorialEstado);
             }
         });
+
+        jButtonKanban.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mostrarKanban();
+            }
+        });
+
+        jButtonModificar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                modificar();
+            }
+        });
     }
 
     TareaService tareaService = new TareaService();
@@ -98,11 +116,18 @@ public class PanelHistorialEstado extends JPanel {
 
         jLabelTareas = new JLabel("Seleccione una tarea");
         jComboBoxTareas = new JComboBox<>();
+
+        jLabelEstados = new JLabel("Seleccione un estado");
+        jComboBoxEstados = new JComboBox<>();
+        jComboBoxEstados.addItem("Por hacer");
+        jComboBoxEstados.addItem("En progreso");
+        jComboBoxEstados.addItem("Completada");
+
         jButtonGuardarEstado = new JButton("Guardar");
         jButtonAtras = new JButton("Atras");
 
         try{
-            ArrayList<Tarea> tareas = tareaService.obtenerTodasLasTareas();
+            ArrayList<Tarea> tareas = tareaService.obtenerTareasSinEstado();
             for(Tarea tarea:tareas){
                 jComboBoxTareas.addItem(tarea);
             }
@@ -121,8 +146,8 @@ public class PanelHistorialEstado extends JPanel {
 
         panelEstados.add(jLabelTareas);
         panelEstados.add(jComboBoxTareas);
-        panelEstados.add(jLabelEstado);
-        panelEstados.add(jTextFieldEstado);
+        panelEstados.add(jLabelEstados);
+        panelEstados.add(jComboBoxEstados);
         panelEstados.add(jLabelFecha);
         panelEstados.add(jTextFieldFecha);
         panelEstados.add(jLabelResponsable);
@@ -156,7 +181,7 @@ public class PanelHistorialEstado extends JPanel {
 
     public void guardarEstado(){
         Tarea tareaSeleccionada = (Tarea) jComboBoxTareas.getSelectedItem();
-        String estado = jTextFieldEstado.getText();
+        String estado = jComboBoxEstados.getSelectedItem().toString();
         String fechaTexto = jTextFieldFecha.getText();
         Empleado empleadoSeleccionado = (Empleado) jComboBoxEmpleado.getSelectedItem();
         try {
@@ -213,7 +238,58 @@ public class PanelHistorialEstado extends JPanel {
         } catch (ServiceException e){
             JOptionPane.showMessageDialog(null, "Error al obtener los historiales: " + e.getMessage());
         }
+    }
 
+    public void mostrarKanban(){
+        historialEstadoService = new HistorialEstadoService();
+        try{
+            historiales = historialEstadoService.obtenerDatos();
+            ArrayList<HistorialEstado> porHacer = new ArrayList<>();
+            ArrayList<HistorialEstado> enProgreso = new ArrayList<>();
+            ArrayList<HistorialEstado> completadas = new ArrayList<>();
+            for (HistorialEstado historialEstado : historiales) {
+                if ("Por hacer".equals(historialEstado.getEstado())){
+                    porHacer.add(historialEstado);
+                } else if ("En progreso".equals(historialEstado.getEstado())) {
+                    enProgreso.add(historialEstado);
+                } else if ("Completada".equals(historialEstado.getEstado())) {
+                    completadas.add(historialEstado);
+                }
+            }
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("POR HACER\n");
+            for (HistorialEstado historialEstado : porHacer){
+                stringBuilder.append("-").append(historialEstado.getTituloTarea()).append("\n");
+            }
+            stringBuilder.append("\n");
+            stringBuilder.append("EN PROGRESO\n");
+            for (HistorialEstado historialEstado : enProgreso) {
+                stringBuilder.append("-").append(historialEstado.getTituloTarea()).append("\n");
+            }
+            stringBuilder.append("\n");
+            stringBuilder.append("COMPLETADA\n");
+            for (HistorialEstado historialEstado : completadas) {
+                stringBuilder.append("-").append(historialEstado.getTituloTarea()).append("\n");
+            }
 
+            JTextArea textArea = new JTextArea(30, 50);
+            textArea.setEditable(false);
+            textArea.setText(stringBuilder.toString());
+
+            JScrollPane scrollPane = new JScrollPane(textArea);
+            JOptionPane.showMessageDialog(null, scrollPane, "Tablero Historial de Estados", JOptionPane.INFORMATION_MESSAGE);
+        } catch (ServiceException e) {
+            JOptionPane.showMessageDialog(null, "Error al obtener los historiales: " + e.getMessage());
+        }
+    }
+
+    public void modificar(){
+        historialEstadoService = new HistorialEstadoService();
+        panelEstados = new JPanel();
+        panelEstados.setLayout(new GridLayout(6,2));
+
+        jPanelBotones = new JPanel();
+
+        //hacer DAO para obtener tareas con estados
     }
 }

@@ -119,4 +119,12 @@ public class TareaService {
             throw new ServiceException(e.getMessage());
         }
     }
+
+    public ArrayList<Tarea> obtenerTareasSinEstado() throws ServiceException{
+        try {
+            return daoTarea.obtenerTareasSinEstado();
+        } catch (DAOException e) {
+            throw new ServiceException(e.getMessage());
+        }
+    }
 }
