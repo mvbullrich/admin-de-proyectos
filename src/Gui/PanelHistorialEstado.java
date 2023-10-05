@@ -1,7 +1,6 @@
 package Gui;
 
 import Controlador.Empleado;
-import Controlador.EstadoTarea;
 import Controlador.HistorialEstado;
 import Controlador.Tarea;
 import Service.EmpleadoService;
@@ -60,7 +59,6 @@ public class PanelHistorialEstado extends JPanel {
         jPanelBotones.add(jButtonActualizar);
         jPanelBotones.add(jButtonMostrar);
         jPanelBotones.add(jButtonKanban);
-        jPanelBotones.add(jButtonModificar);
         jPanelBotones.add(jButtonAtras);
         add(jPanelBotones, BorderLayout.CENTER);
 
@@ -93,13 +91,6 @@ public class PanelHistorialEstado extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 mostrarKanban();
-            }
-        });
-
-        jButtonModificar.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                modificar();
             }
         });
     }
@@ -281,15 +272,5 @@ public class PanelHistorialEstado extends JPanel {
         } catch (ServiceException e) {
             JOptionPane.showMessageDialog(null, "Error al obtener los historiales: " + e.getMessage());
         }
-    }
-
-    public void modificar(){
-        historialEstadoService = new HistorialEstadoService();
-        panelEstados = new JPanel();
-        panelEstados.setLayout(new GridLayout(6,2));
-
-        jPanelBotones = new JPanel();
-
-        //hacer DAO para obtener tareas con estados
     }
 }

@@ -1,7 +1,5 @@
 package Gui;
 
-import Controlador.AdministradorProyectos;
-
 import javax.swing.*;
 import java.awt.*;
 

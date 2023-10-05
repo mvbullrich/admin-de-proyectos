@@ -786,7 +786,11 @@ public class PanelProyecto extends JPanel{
         if(proyectoSeleccionado != null) {
             try{
                 double total = proyectoService.calcularCostoDinero(proyectoSeleccionado.getId());
-                JOptionPane.showMessageDialog(null, "El costo total del proyecto es: " + total);
+                if (total == 0){
+                    JOptionPane.showMessageDialog(null, "No hay ningun empleado asignado como para poder calcular el costo total.");
+                }else{
+                    JOptionPane.showMessageDialog(null, "El costo total del proyecto es: " + total);
+                }
             } catch (ServiceException ex) {
                 JOptionPane.showMessageDialog(null, "Error al calcular el costo del proyecto: " + ex.getMessage());
             }

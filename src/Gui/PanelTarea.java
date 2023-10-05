@@ -45,6 +45,7 @@ public class PanelTarea extends JPanel {
     JButton jButtonEliminar = new JButton("Eliminar");
     JButton jButtonModificar = new JButton("Modificar");
     JButton jButtonAsignar = new JButton("Asignar");
+    JButton jButtonSprint = new JButton("Sprint");
     JButton jButtonEstados;
     JButton jButtonMostrar;
     JButton jButtonDesasignar = new JButton("Desasignar empleado");
@@ -81,6 +82,7 @@ public class PanelTarea extends JPanel {
         jPanelBotones.add(jButtonOpcionAsignar);
         jPanelBotones.add(jButtonDesasignar);
         jPanelBotones.add(jButtonEstados);
+        jPanelBotones.add(jButtonSprint);
         jPanelBotones.add(jButtonAtras);
         add(jPanelBotones, BorderLayout.CENTER);
 
@@ -162,6 +164,15 @@ public class PanelTarea extends JPanel {
                 PanelTarea panelTarea1 = new PanelTarea(panel);
                 panelTarea1.panelDesasignar();
                 panel.mostrar(panelTarea1);
+            }
+        });
+
+        jButtonSprint.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                PanelSprint panelSprint = new PanelSprint(panel);
+                panelSprint.menu();
+                panel.mostrar(panelSprint);
             }
         });
     }

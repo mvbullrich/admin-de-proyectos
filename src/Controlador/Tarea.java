@@ -13,6 +13,7 @@ public class Tarea {
     private int empleado_id;
     private ArrayList<HistorialEstado> historialEstados;
     private int id_proyecto;
+    private int id_sprint;
 
     public Tarea(int id, String titulo, String descripcion, int estimacion, int horasReales) {
         this.id = id;
@@ -108,6 +109,13 @@ public class Tarea {
         this.id_proyecto = id_proyecto;
     }
 
+    public int getId_sprint() {
+        return id_sprint;
+    }
+
+    public void setId_sprint(int id_sprint) {
+        this.id_sprint = id_sprint;
+    }
 
     @Override
     public String toString() {
