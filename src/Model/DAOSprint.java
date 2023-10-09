@@ -34,6 +34,11 @@ public class DAOSprint implements DAO<Sprint>{
         try {
             Class.forName(DB_JDBC_DRIVER);
             connection = DriverManager.getConnection(DB_URL,DB_USER,DB_PASSWORD);
+
+            PreparedStatement updateStatement = connection.prepareStatement("UPDATE Tarea SET id_sprint = NULL WHERE id_sprint = ?");
+            updateStatement.setInt(1, id);
+            updateStatement.executeUpdate();
+
             preparedStatement=connection.prepareStatement("DELETE FROM Sprint  WHERE id=?");
             preparedStatement.setInt(1, id);
             int res=preparedStatement.executeUpdate();
@@ -150,7 +155,62 @@ public class DAOSprint implements DAO<Sprint>{
         try{
             Class.forName(DB_JDBC_DRIVER);
             connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-            preparedStatement = connection.prepareStatement("SELECT * FROM Tarea WHERE id_sprint IS NULL");
+            preparedStatement = connection.prepareStatement("SELECT * FROM Tarea WHERE id_sprint IS NULL AND id_backlog IS NULL");
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            ArrayList<Tarea> tareasSinSprint = new ArrayList<>();
+
+            while (resultSet.next()){
+                Tarea tarea = new Tarea();
+                tarea.setId(resultSet.getInt("id"));
+                tarea.setTitulo(resultSet.getString("titulo"));
+                tarea.setDescripcion(resultSet.getString("descripcion"));
+                tarea.setEstimacion(resultSet.getInt("estimacion"));
+                tarea.setHorasReales(resultSet.getInt("horasreales"));
+                tarea.setEmpleado_id(resultSet.getInt("empleado_id"));
+                tarea.setIdProyecto(resultSet.getInt("id_proyecto"));
+                tarea.setId_sprint(resultSet.getInt("id_sprint"));
+                tarea.setId_backlog(resultSet.getInt("id_backlog"));
+
+                tareasSinSprint.add(tarea);
+            }
+            return tareasSinSprint;
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new DAOException(e.getMessage());
+        }
+    }
+
+    public ArrayList<Sprint> obtenerSprints() throws DAOException{
+        ArrayList<Sprint> sprints = new ArrayList<>();
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        try {
+            Class.forName(DB_JDBC_DRIVER);
+            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            preparedStatement = connection.prepareStatement("SELECT * FROM Sprint");
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                Sprint sprint = new Sprint();
+                sprint.setId(resultSet.getInt("id"));
+                sprint.setFechaInicio(resultSet.getDate("fecha_inicio").toLocalDate());
+                sprint.setFechaFin(resultSet.getDate("fecha_fin").toLocalDate()); // Corregir aquí
+
+                sprints.add(sprint);
+            }
+            return sprints;
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new DAOException(e.getMessage());
+        }
+    }
+
+    public ArrayList<Tarea> obtenerTareasConSprint() throws DAOException{
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        try{
+            Class.forName(DB_JDBC_DRIVER);
+            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            preparedStatement = connection.prepareStatement("SELECT * FROM Tarea WHERE id_sprint IS NOT NULL");
             ResultSet resultSet = preparedStatement.executeQuery();
 
             ArrayList<Tarea> tareasSinSprint = new ArrayList<>();
@@ -174,37 +234,14 @@ public class DAOSprint implements DAO<Sprint>{
         }
     }
 
-    public ArrayList<Sprint> obtenerSprints() throws DAOException{
-        ArrayList<Sprint> sprints = new ArrayList<>();
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        try {
-            Class.forName(DB_JDBC_DRIVER);
-            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-            preparedStatement = connection.prepareStatement("SELECT * FROM Sprint");
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            while (resultSet.next()){
-                Sprint sprint = new Sprint();
-                sprint.setId(resultSet.getInt("id"));
-                sprint.setFechaInicio(resultSet.getDate("fecha_inicio").toLocalDate());
-                sprint.setFechaInicio(resultSet.getDate("fecha_fin").toLocalDate());
-
-                sprints.add(sprint);
-            }
-            return sprints;
-        }catch (SQLException | ClassNotFoundException e){
-            throw new DAOException(e.getMessage());
-        }
-    }
-
-    public ArrayList<Tarea> obtenerTareasConSprint() throws DAOException{
+    public ArrayList<Tarea> obtenerTareasPorSprint(int idSprint)throws DAOException{
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         try{
             Class.forName(DB_JDBC_DRIVER);
             connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-            preparedStatement = connection.prepareStatement("SELECT * FROM Tarea WHERE id_sprint IS NOT NULL");
+            preparedStatement = connection.prepareStatement("SELECT * FROM Tarea WHERE id_sprint IS NOT NULL AND id_sprint=?");
+            preparedStatement.setInt(1, idSprint);
             ResultSet resultSet = preparedStatement.executeQuery();
 
             ArrayList<Tarea> tareasSinSprint = new ArrayList<>();

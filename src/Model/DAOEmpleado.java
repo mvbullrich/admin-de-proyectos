@@ -37,6 +37,11 @@ public class DAOEmpleado implements DAO<Empleado>{
         try {
             Class.forName(DB_JDBC_DRIVER);
             connection = DriverManager.getConnection(DB_URL,DB_USER,DB_PASSWORD);
+
+            PreparedStatement updateStatement = connection.prepareStatement("UPDATE Tarea SET empleado_id = NULL WHERE empleado_id = ?");
+            updateStatement.setInt(1, id);
+            updateStatement.executeUpdate();
+
             preparedStatement=connection.prepareStatement("DELETE FROM Empleado  WHERE id=?");
             preparedStatement.setInt(1, id);
             int res=preparedStatement.executeUpdate();

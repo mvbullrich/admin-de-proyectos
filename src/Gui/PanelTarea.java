@@ -1,8 +1,10 @@
 package Gui;
 
 import Controlador.Empleado;
+import Controlador.HistorialEstado;
 import Controlador.Tarea;
 import Service.EmpleadoService;
+import Service.HistorialEstadoService;
 import Service.ServiceException;
 import Service.TareaService;
 
@@ -11,10 +13,13 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Array;
+import java.sql.Date;
 import java.util.ArrayList;
 
 public class PanelTarea extends JPanel {
     TareaService tareaService;
+    EmpleadoService empleadoService;
+    HistorialEstadoService historialEstadoService;
     PanelManager panel;
     JPanel panelTarea;
 
@@ -23,176 +28,100 @@ public class PanelTarea extends JPanel {
     JLabel jLabelDescripcion = new JLabel("Descripción:");
     JLabel jLabelEstimacion = new JLabel("Estimación:");
     JLabel jLabelHorasReales = new JLabel("Horas Reales:");
-    JLabel jLabelEmpleado = new JLabel("Empleado asignado: ");
-
     JTextField jTextFieldId = new JTextField(10);
     JTextField jTextFieldTitulo = new JTextField(20);
     JTextField jTextFieldDescripcion = new JTextField(50);
     JTextField jTextFieldEstimacion = new JTextField(10);
     JTextField jTextFieldHorasReales = new JTextField(10);
-    JTextField jTextFieldEmpleado = new JTextField(50);
+    JComboBox<Tarea> jComboBoxTareas;
+    JComboBox jComboBoxEstado;
+    JComboBox<Empleado> jComboBoxEmpleados;
+    JLabel jLabelEstado = new JLabel("Seleccione un estado: ");
+    JLabel jLabelEmpleado = new JLabel("Empleado responsable");
+    JLabel jLabelFecha = new JLabel("Fecha (YYYY-MM-DD): ");
+    JTextField jTextFieldFecha = new JTextField();
 
-    JButton jButtonOpcionGuardar;
-    JButton jButtonOpcionBuscar;
-    JButton jButtonOpcionEliminar;
-    JButton jButtonOpcionModificar;
-    JButton jButtonOpcionAsignar;
-    JButton jButtonAtras = new JButton("Atras");
+    JButton jButtonGuardar = new JButton("Guardar una nueva tarea");
+    JButton jButtonMisTareas = new JButton("Mis tareas");
     JButton jButtonSalir = new JButton("Salir");
-
-    JButton jButtonGuardar = new JButton("Guardar");
-    JButton jButtonBuscar = new JButton("Buscar");
     JButton jButtonEliminar = new JButton("Eliminar");
     JButton jButtonModificar = new JButton("Modificar");
-    JButton jButtonAsignar = new JButton("Asignar");
-    JButton jButtonSprint = new JButton("Sprint");
-    JButton jButtonEstados;
-    JButton jButtonMostrar;
-    JButton jButtonDesasignar = new JButton("Desasignar empleado");
+    JButton jButtonMostrar = new JButton("Mostrar datos");
+    JButton jButtonEstado = new JButton("Actualizar estado");
+    JButton jButtonMostrarEstados = new JButton("Mostrar estados");
+    JButton jButtonKanban = new JButton("Tablero Kanban");
 
     JPanel jPanelBotones;
 
-    public PanelTarea(PanelManager panel) {
+    public PanelTarea(PanelManager panel){
         this.panel = panel;
-        mostrarOpciones();
+        inicio();
     }
 
-    public void mostrarOpciones() {
+    public void inicio(){
         panelTarea = new JPanel();
-        panelTarea.setLayout(new GridLayout(0, 1));
-
-        jButtonOpcionGuardar = new JButton("Guardar una nueva tarea");
-        jButtonOpcionBuscar = new JButton("Buscar una tarea");
-        jButtonOpcionEliminar = new JButton("Eliminar una tarea");
-        jButtonOpcionModificar = new JButton("Modificar una tarea");
-        jButtonOpcionAsignar = new JButton("Asignar empleado a una tarea");
-        jButtonEstados = new JButton("Actualizar estados tarea");
-        jButtonMostrar = new JButton("Mostrar todas");
+        panelTarea.setLayout(new GridLayout(3,1));
         jPanelBotones = new JPanel();
         jPanelBotones.setLayout(new BoxLayout(jPanelBotones, BoxLayout.Y_AXIS));
-
         setLayout(new BorderLayout());
         add(panelTarea, BorderLayout.CENTER);
 
-        jPanelBotones.add(jButtonOpcionGuardar);
-        jPanelBotones.add(jButtonOpcionBuscar);
-        jPanelBotones.add(jButtonOpcionEliminar);
-        jPanelBotones.add(jButtonOpcionModificar);
-        jPanelBotones.add(jButtonMostrar);
-        jPanelBotones.add(jButtonOpcionAsignar);
-        jPanelBotones.add(jButtonDesasignar);
-        jPanelBotones.add(jButtonEstados);
-        jPanelBotones.add(jButtonSprint);
-        jPanelBotones.add(jButtonAtras);
-        add(jPanelBotones, BorderLayout.CENTER);
+        jPanelBotones.add(jButtonGuardar);
+        jPanelBotones.add(jButtonMisTareas);
+        jPanelBotones.add(jButtonKanban);
+        jPanelBotones.add(jButtonSalir);
+        add(jPanelBotones, BorderLayout.SOUTH);
 
-        jButtonOpcionGuardar.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                PanelTarea panelTarea = new PanelTarea(panel);
-                panelTarea.formularioGuardar();
-                panel.mostrar(panelTarea);
-            }
-        });
-
-        jButtonOpcionEliminar.addActionListener(new ActionListener() {
+        jButtonGuardar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 PanelTarea panelTarea1 = new PanelTarea(panel);
-                panelTarea1.formularioEliminar();
+                panelTarea1.formularioGuardar();
                 panel.mostrar(panelTarea1);
             }
         });
 
-        jButtonOpcionModificar.addActionListener(new ActionListener() {
+        jButtonMisTareas.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 PanelTarea panelTarea1 = new PanelTarea(panel);
-                panelTarea1.formularioModificar();
+                panelTarea1.menuTareas();
                 panel.mostrar(panelTarea1);
             }
         });
 
-        jButtonOpcionBuscar.addActionListener(new ActionListener() {
+        jButtonSalir.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                PanelTarea panelTarea1 = new PanelTarea(panel);
-                panelTarea1.formularioBuscar();
-                panel.mostrar(panelTarea1);
+                MenuInicio menuInicio = new MenuInicio(panel);
+                menuInicio.armarMenuInicio();
+                panel.mostrar(menuInicio);
             }
         });
 
-        jButtonAtras.addActionListener(new ActionListener() {
+        jButtonKanban.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                PanelProyecto panelProyecto = new PanelProyecto(panel);
-                panelProyecto.mostrarOpciones();
-                panel.mostrar(panelProyecto);
-            }
-        });
-
-        jButtonOpcionAsignar.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                PanelTarea panelTarea1 = new PanelTarea(panel);
-                panelTarea1.formularioAsignarEmpleado();
-                panel.mostrar(panelTarea1);
-            }
-        });
-
-        jButtonEstados.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                PanelHistorialEstado panelHistorialEstado = new PanelHistorialEstado(panel);
-                panelHistorialEstado.opciones();
-                panel.mostrar(panelHistorialEstado);
-            }
-        });
-
-        jButtonMostrar.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                PanelTarea panelTarea1 = new PanelTarea(panel);
-                panelTarea1.mostrarTodas();
-                panel.mostrar(panelTarea1);
-            }
-        });
-
-        jButtonDesasignar.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                PanelTarea panelTarea1 = new PanelTarea(panel);
-                panelTarea1.panelDesasignar();
-                panel.mostrar(panelTarea1);
-            }
-        });
-
-        jButtonSprint.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                PanelSprint panelSprint = new PanelSprint(panel);
-                panelSprint.menu();
-                panel.mostrar(panelSprint);
+                tableroKanban();
             }
         });
     }
 
-    public void formularioGuardar() {
+    public void formularioGuardar(){
         tareaService = new TareaService();
         panelTarea = new JPanel();
         panelTarea.setLayout(new GridLayout(4, 2));
 
+        jButtonGuardar = new JButton("Guardar");
+        jButtonSalir = new JButton("Atrás");
         jPanelBotones = new JPanel();
 
         panelTarea.add(jlabelTitulo);
         panelTarea.add(jTextFieldTitulo);
-
         panelTarea.add(jLabelDescripcion);
         panelTarea.add(jTextFieldDescripcion);
-
         panelTarea.add(jLabelEstimacion);
         panelTarea.add(jTextFieldEstimacion);
-
         panelTarea.add(jLabelHorasReales);
         panelTarea.add(jTextFieldHorasReales);
 
@@ -206,7 +135,28 @@ public class PanelTarea extends JPanel {
         jButtonGuardar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                guardarTarea();
+                Tarea tarea = new Tarea();
+                try {
+                    tarea.setTitulo(jTextFieldTitulo.getText());
+                    tarea.setDescripcion(jTextFieldDescripcion.getText());
+                    tarea.setEstimacion(Integer.parseInt(jTextFieldEstimacion.getText()));
+                    tarea.setHorasReales(Integer.parseInt((jTextFieldHorasReales.getText())));
+                    tarea.setEmpleado_id(0);
+                    if (tarea.getTitulo().isEmpty() && tarea.getDescripcion().isEmpty()) {
+                        throw new IllegalArgumentException();
+                    } else {
+                        tareaService.guardarTarea(tarea);
+                        JOptionPane.showMessageDialog(null, "Tarea guardada exitosamente");
+                        jTextFieldTitulo.setText("");
+                        jTextFieldDescripcion.setText("");
+                        jTextFieldEstimacion.setText("");
+                        jTextFieldHorasReales.setText("");
+                    }
+                } catch (ServiceException serEx) {
+                    JOptionPane.showMessageDialog(null, "No se pudo guardar la tarea");
+                } catch (IllegalArgumentException ex) {
+                    JOptionPane.showMessageDialog(null, "Error. Se deben llenar los campos con valores correctos");
+                }
             }
         });
 
@@ -214,112 +164,184 @@ public class PanelTarea extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 PanelTarea panelTarea = new PanelTarea(panel);
-                panelTarea.mostrarOpciones();
+                panelTarea.inicio();
                 panel.mostrar(panelTarea);
             }
         });
     }
 
-    public void guardarTarea() {
-        Tarea tarea = new Tarea();
-        try {
-            tarea.setTitulo(jTextFieldTitulo.getText());
-            tarea.setDescripcion(jTextFieldDescripcion.getText());
-            tarea.setEstimacion(Integer.parseInt(jTextFieldEstimacion.getText()));
-            tarea.setHorasReales(Integer.parseInt((jTextFieldHorasReales.getText())));
-            tarea.setEmpleado_id(0);
-            if (tarea.getTitulo().isEmpty() || tarea.getDescripcion().isEmpty()) {
-                throw new IllegalArgumentException();
-            } else {
-                tareaService.guardarTarea(tarea);
-                JOptionPane.showMessageDialog(null, "Tarea guardada exitosamente");
-            }
-        } catch (ServiceException serEx) {
-            JOptionPane.showMessageDialog(null, "No se pudo guardar la tarea");
-        } catch (IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(null, "Error. Se deben llenar los campos con valores correctos");
-        }
-    }
-
-    public void formularioEliminar() {
+    public void menuTareas(){
         tareaService = new TareaService();
         panelTarea = new JPanel();
-        panelTarea.setLayout(new GridLayout(1, 1));
-
+        panelTarea.setLayout(new GridLayout(5,5));
+        jButtonSalir = new JButton("Salir");
         jPanelBotones = new JPanel();
-
-        jLabelId = new JLabel("ID de la tarea: ");
-
-        panelTarea.add(jLabelId);
-        panelTarea.add(jTextFieldId);
-
+        jComboBoxTareas = new JComboBox<>();
+        try{
+            ArrayList<Tarea> tareas = tareaService.obtenerTodasLasTareas();
+            for (Tarea tarea : tareas){
+                jComboBoxTareas.addItem(tarea);
+            }
+        } catch (ServiceException e){
+            JOptionPane.showMessageDialog(null, "Error al obtener las tareas");
+        }
+        panelTarea.add(jComboBoxTareas);
         setLayout(new BorderLayout());
         add(panelTarea, BorderLayout.CENTER);
 
         jPanelBotones.add(jButtonEliminar);
+        jPanelBotones.add(jButtonModificar);
+        jPanelBotones.add(jButtonMostrar);
+        jPanelBotones.add(jButtonEstado);
+        jPanelBotones.add(jButtonMostrarEstados);
         jPanelBotones.add(jButtonSalir);
         add(jPanelBotones, BorderLayout.SOUTH);
-
-        jButtonEliminar.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                eliminarTarea();
-            }
-        });
 
         jButtonSalir.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 PanelTarea panelTarea1 = new PanelTarea(panel);
-                panelTarea1.mostrarOpciones();
+                panelTarea1.inicio();
                 panel.mostrar(panelTarea1);
+            }
+        });
+
+        jButtonEliminar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Tarea tareaSeleccionada = (Tarea) jComboBoxTareas.getSelectedItem();
+                if(tareaSeleccionada != null){
+                    try{
+                        int confirmacion = JOptionPane.showConfirmDialog(null, "¿Seguro que quieres eliminar esta tarea?");
+                        if (confirmacion == JOptionPane.YES_OPTION){
+                            tareaService.eliminarTarea(tareaSeleccionada.getId());
+                            JOptionPane.showMessageDialog(null, "La tarea se eliminó exitosamente");
+                            jComboBoxTareas.setSelectedIndex(-1);
+                        }
+                    } catch (ServiceException ex){
+                        JOptionPane.showMessageDialog(null, "Error al eliminar la tarea");
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "Seleccione una tarea");
+                }
+            }
+        });
+
+        jButtonModificar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Tarea tarea = (Tarea) jComboBoxTareas.getSelectedItem();
+                if(tarea != null){
+                    PanelTarea panelTarea1 = new PanelTarea(panel);
+                    panelTarea1.modificarTarea(tarea);
+                    panel.mostrar(panelTarea1);
+                }
+            }
+        });
+
+        jButtonMostrar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Tarea tareaSeleccionada = (Tarea) jComboBoxTareas.getSelectedItem();
+                if (tareaSeleccionada != null){
+                    try {
+                        tareaService.buscarTarea(tareaSeleccionada.getId());
+                        StringBuilder tareasInfo = new StringBuilder("TAREA\n");
+                        tareasInfo.append("ID: ").append(tareaSeleccionada.getId()).append("\n");
+                        tareasInfo.append("Titulo: ").append(tareaSeleccionada.getTitulo()).append("\n");
+                        tareasInfo.append("Descripcion: ").append(tareaSeleccionada.getDescripcion()).append("\n");
+                        tareasInfo.append("Estimacion: ").append(tareaSeleccionada.getEstimacion()).append("\n");
+                        tareasInfo.append("Horas Reales: ").append(tareaSeleccionada.getHorasReales()).append("\n");
+
+                        int idEmpleado = tareaSeleccionada.getEmpleado_id();
+                        if (idEmpleado != 0) {
+                            tareasInfo.append("ID de empleado asignado: ").append(tareaSeleccionada.getEmpleado_id()).append("\n");
+                        } else {
+                            tareasInfo.append("-No hay ningun empleado asignado a esta tarea.\n");
+                        }
+
+                        int proyectoId = tareaSeleccionada.getIdProyecto();
+                        if (proyectoId != 0){
+                            tareasInfo.append("ID del proyecto: ").append(tareaSeleccionada.getIdProyecto()).append("\n");
+                        } else {
+                            tareasInfo.append("-Esta tarea no esta asignada a ningun proyecto.\n");
+                        }
+                        JOptionPane.showMessageDialog(null, tareasInfo.toString(), "Información de la tarea", JOptionPane.INFORMATION_MESSAGE);
+                    } catch (ServiceException ex){
+                        JOptionPane.showMessageDialog(null, "Error al obtener los datos de la tarea");
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "Seleccione una tarea");
+                }
+            }
+        });
+
+        jButtonEstado.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Tarea tarea = (Tarea) jComboBoxTareas.getSelectedItem();
+                if (tarea != null){
+                    PanelTarea panelTarea1 = new PanelTarea(panel);
+                    panelTarea1.estados(tarea);
+                    panel.mostrar(panelTarea1);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Seleccione una tarea");
+                }
+            }
+        });
+
+        jButtonMostrarEstados.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                historialEstadoService = new HistorialEstadoService();
+                Tarea tareaSeleccionada = (Tarea) jComboBoxTareas.getSelectedItem();
+                if (tareaSeleccionada != null){
+                    try {
+                        ArrayList<HistorialEstado> historial = historialEstadoService.obtenerHistorialPorTarea(tareaSeleccionada.getId());
+                        StringBuilder historialInfo = new StringBuilder("HISTORIAL DE ESTADOS:\n");
+                        int contador = 1;
+                        for (HistorialEstado historialEstado : historial){
+                            historialInfo.append("Modificación: ").append(contador).append("\n");
+                            historialInfo.append("ID tarea: ").append(historialEstado.getIdTarea()).append("\n");
+                            historialInfo.append("Estado: ").append(historialEstado.getEstado()).append("\n");
+                            historialInfo.append("Fecha: ").append(historialEstado.getFecha()).append("\n");
+                            historialInfo.append("ID responsable: ").append(historialEstado.getIdResponsable()).append("\n");
+                            contador += 1;
+                            historialInfo.append("\n");
+                        }
+                        JOptionPane.showMessageDialog(null, historialInfo.toString(), "Historial Estado", JOptionPane.INFORMATION_MESSAGE);
+                    } catch (ServiceException ex){
+                        JOptionPane.showMessageDialog(null, "Error al obtener el historial de estados");
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "Seleccione una tarea");
+                }
             }
         });
     }
 
-    public void eliminarTarea() {
-        try {
-            int idTarea = Integer.parseInt(jTextFieldId.getText());
-            Tarea tarea = tareaService.buscarTarea(idTarea);
-            if (tarea != null) {
-                JOptionPane.showMessageDialog(null, "Tarea encontrada:\n" +
-                        "ID: " + idTarea + "\n" +
-                        "Título: " + tarea.getDescripcion() + "\n" +
-                        "Descripción: " + tarea.getDescripcion() + "\n" +
-                        "Estimacion: " + tarea.getEstimacion());
-                int confirmacion = JOptionPane.showConfirmDialog(null, "Seguro que quiere eliminar esta tarea?");
-                if (confirmacion == JOptionPane.YES_OPTION) {
-                    try {
-                        tareaService.eliminarTarea(idTarea);
-                        JOptionPane.showMessageDialog(null, "Tarea eliminada exitosamente");
-                    } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(null, "Ingrese un ID de tarea válido");
-                    } catch (ServiceException serEx) {
-                        JOptionPane.showMessageDialog(null, "No se pudo eliminar la tarea");
-                    }
-                }
-            } else {
-                JOptionPane.showMessageDialog(null, "No se encontró ninguna tarea con ese ID");
-            }
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(null, "Ingrese un ID de tarea válido");
-        } catch (ServiceException ex) {
-            JOptionPane.showMessageDialog(null, "Error al buscar la tarea");
-        }
-    }
-
-    public void formularioModificar() {
+    public void modificarTarea(Tarea tarea){
         tareaService = new TareaService();
         panelTarea = new JPanel();
         panelTarea.setLayout(new GridLayout(6, 2));
 
+        jTextFieldTitulo = new JTextField(tarea.getTitulo());
+        jTextFieldDescripcion = new JTextField(tarea.getDescripcion());
+        jTextFieldEstimacion = new JTextField(String.valueOf(tarea.getEstimacion()));
+        jTextFieldHorasReales = new JTextField(String.valueOf(tarea.getHorasReales()));
+
         jButtonModificar = new JButton("Modificar");
+        jButtonSalir = new JButton("Salir");
         jPanelBotones = new JPanel();
 
-        jLabelId = new JLabel("ID de la tarea:");
-
-        panelTarea.add(jLabelId);
-        panelTarea.add(jTextFieldId);
+        panelTarea.add(jlabelTitulo);
+        panelTarea.add(jTextFieldTitulo);
+        panelTarea.add(jLabelDescripcion);
+        panelTarea.add(jTextFieldDescripcion);
+        panelTarea.add(jLabelEstimacion);
+        panelTarea.add(jTextFieldEstimacion);
+        panelTarea.add(jLabelHorasReales);
+        panelTarea.add(jTextFieldHorasReales);
 
         setLayout(new BorderLayout());
         add(panelTarea, BorderLayout.CENTER);
@@ -331,278 +353,99 @@ public class PanelTarea extends JPanel {
         jButtonModificar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                tarea.setTitulo(jTextFieldTitulo.getText());
+                tarea.setDescripcion(jTextFieldDescripcion.getText());
+                tarea.setEstimacion(Integer.parseInt(jTextFieldEstimacion.getText()));
+                tarea.setHorasReales(Integer.parseInt(jTextFieldHorasReales.getText()));
                 try {
-                    int idTarea = Integer.parseInt(jTextFieldId.getText());
-                    Tarea tarea = tareaService.buscarTarea(idTarea);
-                    if (tarea != null) {
-                        modificarTarea(tarea);
-                    } else {
-                        JOptionPane.showMessageDialog(null, "No se encontró ninguna tarea con ese ID");
-                    }
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(null, "Ingrese un ID de tarea válido");
+                    tareaService.modificar(tarea);
+                    JOptionPane.showMessageDialog(null, "La tarea se modificó exitosamente");
                 } catch (ServiceException ex) {
-                    JOptionPane.showMessageDialog(null, "Error al buscar la tarea");
+                    JOptionPane.showMessageDialog(null, "Error al modificar la tarea" + ex.getMessage());
                 }
+                jTextFieldTitulo.setText("");
+                jTextFieldDescripcion.setText("");
+                jTextFieldEstimacion.setText("");
+                jTextFieldHorasReales.setText("");
             }
         });
-
         jButtonSalir.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 PanelTarea panelTarea1 = new PanelTarea(panel);
-                panelTarea1.mostrarOpciones();
+                panelTarea1.menuTareas();
                 panel.mostrar(panelTarea1);
             }
         });
     }
 
-    public void modificarTarea(Tarea tarea) {
+    public void estados(Tarea tarea){
         tareaService = new TareaService();
-        panelTarea = new JPanel();
-        panelTarea.setLayout(new GridLayout(6, 2));
-
-        jTextFieldTitulo = new JTextField(tarea.getTitulo());
-        jTextFieldDescripcion = new JTextField(tarea.getDescripcion());
-        jTextFieldEstimacion = new JTextField(String.valueOf(tarea.getEstimacion()));
-        jTextFieldHorasReales = new JTextField(String.valueOf(tarea.getHorasReales()));
-
-        jButtonModificar = new JButton();
-        jPanelBotones = new JPanel();
-
-        panelTarea.add(jlabelTitulo);
-        panelTarea.add(jTextFieldTitulo);
-
-        panelTarea.add(jLabelDescripcion);
-        panelTarea.add(jTextFieldDescripcion);
-
-        panelTarea.add(jLabelEstimacion);
-        panelTarea.add(jTextFieldEstimacion);
-
-        panelTarea.add(jLabelHorasReales);
-        panelTarea.add(jTextFieldHorasReales);
-
-        setLayout(new BorderLayout());
-        add(panelTarea, BorderLayout.CENTER);
-
-        jPanelBotones.add(jButtonModificar);
-        add(jPanelBotones, BorderLayout.SOUTH);
-
-        int opcion = JOptionPane.showOptionDialog(null, panelTarea, "Modificar Tarea", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
-        if (opcion == JOptionPane.OK_OPTION) {
-            tarea.setTitulo(jTextFieldTitulo.getText());
-            tarea.setDescripcion(jTextFieldDescripcion.getText());
-            tarea.setEstimacion(Integer.parseInt(jTextFieldEstimacion.getText()));
-            tarea.setHorasReales(Integer.parseInt(jTextFieldHorasReales.getText()));
-            try {
-                tareaService.modificar(tarea);
-                JOptionPane.showMessageDialog(null, "La tarea se modificó exitosamente");
-            } catch (ServiceException ex) {
-                JOptionPane.showMessageDialog(null, "Error al modificar la tarea" + ex.getMessage());
-            }
-        }
-    }
-
-    public void formularioBuscar() {
-        tareaService = new TareaService();
-        panelTarea = new JPanel();
-        panelTarea.setLayout(new GridLayout(1, 1));
-
-        jPanelBotones = new JPanel();
-
-        jLabelId = new JLabel("ID de la tarea: ");
-
-        panelTarea.add(jLabelId);
-        panelTarea.add(jTextFieldId);
-
-        setLayout(new BorderLayout());
-        add(panelTarea, BorderLayout.CENTER);
-
-        jPanelBotones.add(jButtonBuscar);
-        jPanelBotones.add(jButtonSalir);
-        add(jPanelBotones, BorderLayout.SOUTH);
-
-        jButtonBuscar.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                buscarTarea();
-            }
-        });
-
-        jButtonSalir.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                PanelTarea panelTarea1 = new PanelTarea(panel);
-                panelTarea1.mostrarOpciones();
-                panel.mostrar(panelTarea1);
-            }
-        });
-    }
-
-    public void buscarTarea() {
-        try {
-            int idTarea = Integer.parseInt(jTextFieldId.getText());
-            Tarea tarea = tareaService.buscarTarea(idTarea);
-            if (tarea != null) {
-                JOptionPane.showMessageDialog(null, "Tarea encontrada:\n" +
-                        "ID: " + idTarea + "\n" +
-                        "Título: " + tarea.getDescripcion() + "\n" +
-                        "Descripción: " + tarea.getDescripcion() + "\n" +
-                        "Estimacion: " + tarea.getEstimacion());
-            } else {
-                JOptionPane.showMessageDialog(null, "No se encontró ninguna tarea con ese ID");
-                jTextFieldId.setText("");
-            }
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(null, "Ingrese un ID de tarea válido");
-            jTextFieldId.setText("");
-        } catch (ServiceException ex) {
-            JOptionPane.showMessageDialog(null, "Error al buscar la tarea");
-            jTextFieldId.setText("");
-        }
-    }
-
-    JComboBox<Tarea> jComboBoxTarea;
-    JComboBox<Empleado> jComboBoxEmpleado;
-    JLabel jLabelTarea;
-    JLabel jLabelEmpleadosDisponibles;
-    JButton jButtonLimpiar = new JButton("Limpiar");
-
-    public void formularioAsignarEmpleado() {
-        jLabelTarea = new JLabel("Tarea: ");
-        jComboBoxTarea = new JComboBox<>();
-
-        jLabelEmpleadosDisponibles = new JLabel("Empleados:");
-        jComboBoxEmpleado = new JComboBox<>();
-
-        jButtonAsignar = new JButton("Asignar");
-
-        tareaService = new TareaService();
-        EmpleadoService empleadoService = new EmpleadoService();
+        empleadoService = new EmpleadoService();
+        historialEstadoService = new HistorialEstadoService();
 
         panelTarea = new JPanel();
-        panelTarea.setLayout(new GridLayout(2, 2));
-
+        panelTarea.setLayout(new GridLayout(5,2));
         jPanelBotones = new JPanel();
 
-        panelTarea.add(jLabelTarea);
-        panelTarea.add(jComboBoxTarea);
+        jComboBoxEmpleados = new JComboBox<>();
+        jComboBoxEstado = new JComboBox<>();
+        jComboBoxEstado.addItem("Por hacer");
+        jComboBoxEstado.addItem("En progreso");
+        jComboBoxEstado.addItem("Completada");
 
-        panelTarea.add(jLabelEmpleadosDisponibles);
-        panelTarea.add(jComboBoxEmpleado);
-
-        setLayout(new BorderLayout());
-        add(panelTarea, BorderLayout.CENTER);
-
-        jPanelBotones.add(jButtonAsignar);
-        jPanelBotones.add(jButtonSalir);
-        add(jPanelBotones, BorderLayout.SOUTH);
+        jButtonEstado = new JButton("Actualizar estado");
+        jButtonSalir = new JButton("Atrás");
 
         try {
-            ArrayList<Tarea> tareas = tareaService.obtenerTareasSinEmpleadosAsignados();
-            for (Tarea tarea : tareas) {
-                jComboBoxTarea.addItem(tarea);
+            ArrayList<Empleado> empleadoArrayList = empleadoService.obtenerTodosLosEmpleados();
+            for (Empleado empleado : empleadoArrayList){
+                jComboBoxEmpleados.addItem(empleado);
             }
-        } catch (ServiceException e) {
-            JOptionPane.showMessageDialog(null, "Error al obtener las tareas: " + e.getMessage());
+        } catch (ServiceException e){
+            JOptionPane.showMessageDialog(null, "Error al obtener los empleados");
         }
 
-        try {
-            ArrayList<Empleado> empleadosDisponibles = empleadoService.obtenerEmpleadosDisponibles();
-            for (Empleado empleado : empleadosDisponibles) {
-                jComboBoxEmpleado.addItem(empleado);
-            }
-        } catch (ServiceException e) {
-            JOptionPane.showMessageDialog(null, "Error al obtener las tareas: " + e.getMessage());
-        }
-
-
-        jButtonAsignar.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                asignarEmpleado();
-            }
-        });
-
-        jButtonSalir.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                PanelTarea panelTarea1 = new PanelTarea(panel);
-                panelTarea1.mostrarOpciones();
-                panel.mostrar(panelTarea1);
-            }
-        });
-
-        jButtonLimpiar.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                limpiarTareas();
-            }
-        });
-    }
-
-    public void asignarEmpleado() {
-        Tarea tareaSeleccionada = (Tarea) jComboBoxTarea.getSelectedItem();
-        Empleado empleadoSeleccionado = (Empleado) jComboBoxEmpleado.getSelectedItem();
-
-        if (tareaSeleccionada != null && empleadoSeleccionado != null) {
-            int tareaId = tareaSeleccionada.getId();
-            int empleadoId = empleadoSeleccionado.getId();
-
-            try {
-                tareaService.asignarEmpleado(tareaId, empleadoId);
-                JOptionPane.showMessageDialog(null, "Empleado asignado a la tarea correctamente");
-                limpiarTareas();
-            } catch (ServiceException ex) {
-                JOptionPane.showMessageDialog(null, "Error al asignar empleado a la tarea: " + ex.getMessage());
-                limpiarTareas();
-            }
-        } else {
-            JOptionPane.showMessageDialog(null, "Error: Tarea o empleado seleccionado inválido");
-            limpiarTareas();
-        }
-    }
-
-    private void limpiarTareas() {
-        jComboBoxEmpleado.setSelectedIndex(-1);
-        jComboBoxTarea.setSelectedIndex(-1);
-    }
-
-    public void panelDesasignar(){
-        tareaService = new TareaService();
-        EmpleadoService empleadoService = new EmpleadoService();
-
-        panelTarea = new JPanel();
-        panelTarea.setLayout(new GridLayout(2, 2));
-
-        jPanelBotones = new JPanel();
-        jLabelEmpleado = new JLabel("Seleccionar empleado:");
-        jComboBoxEmpleado = new JComboBox<>();
-        ArrayList<Empleado> empleados = new ArrayList<>();
-
-        try {
-            empleados = empleadoService.obtenerEmpleadosAsignados();
-            for(Empleado empleado : empleados) {
-                jComboBoxEmpleado.addItem(empleado);
-            }
-        } catch (ServiceException e) {
-            JOptionPane.showMessageDialog(null, "Error al obtener los empleados: " + e.getMessage());
-        }
-
+        panelTarea.add(jLabelEstado);
+        panelTarea.add(jComboBoxEstado);
+        panelTarea.add(jLabelFecha);
+        panelTarea.add(jTextFieldFecha);
         panelTarea.add(jLabelEmpleado);
-        panelTarea.add(jComboBoxEmpleado);
+        panelTarea.add(jComboBoxEmpleados);
 
         setLayout(new BorderLayout());
         add(panelTarea, BorderLayout.CENTER);
 
-        jPanelBotones.add(jButtonDesasignar);
+        jPanelBotones.add(jButtonEstado);
         jPanelBotones.add(jButtonSalir);
         add(jPanelBotones, BorderLayout.SOUTH);
 
-        jButtonDesasignar.addActionListener(new ActionListener() {
+        jButtonEstado.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                desasignarEmpleado();
+                String estado = jComboBoxEstado.getSelectedItem().toString();
+                String fechaTexto = jTextFieldFecha.getText();
+                Empleado empleadoSeleccionado = (Empleado) jComboBoxEmpleados.getSelectedItem();
+                try{
+                    java.sql.Date fecha = Date.valueOf(fechaTexto);
+                    HistorialEstado historialEstado = new HistorialEstado();
+                    historialEstado.setIdTarea(tarea.getId());
+                    historialEstado.setEstado(estado);
+                    historialEstado.setFecha(fecha);
+                    historialEstado.setIdResponsable(empleadoSeleccionado.getId());
+
+                    try{
+                        historialEstadoService.guardarHistorialEstado(historialEstado);
+                        JOptionPane.showMessageDialog(null, "Estado de la tarea guardado exitosamente");
+                        jComboBoxEstado.setSelectedIndex(-1);
+                        jTextFieldFecha.setText("");
+                        jComboBoxEmpleados.setSelectedIndex(-1);
+                    } catch (ServiceException ex){
+                        JOptionPane.showMessageDialog(null, "Error al guardar el estado");
+                    }
+                } catch (IllegalArgumentException ex){
+                    JOptionPane.showMessageDialog(null, "Formato de fecha incorrecto");
+                }
             }
         });
 
@@ -610,76 +453,41 @@ public class PanelTarea extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 PanelTarea panelTarea1 = new PanelTarea(panel);
-                panelTarea1.mostrarOpciones();
+                panelTarea1.menuTareas();
                 panel.mostrar(panelTarea1);
             }
         });
     }
 
-    public void desasignarEmpleado() {
-        Empleado empleadoSeleccionado = (Empleado) jComboBoxEmpleado.getSelectedItem();
-
-        if (empleadoSeleccionado != null) {
-            int confirmacion = JOptionPane.showConfirmDialog(
-                    null,
-                    "¿Seguro que desea desasignar a " + empleadoSeleccionado.getNombre() + " de su tarea?\n" +
-                            "ID: " + empleadoSeleccionado.getId() + "\n" +
-                            "Costo por hora: " + empleadoSeleccionado.getCostoPorHora(),
-                    "Confirmación",
-                    JOptionPane.YES_NO_OPTION
-            );
-
-            if (confirmacion == JOptionPane.YES_OPTION) {
-                try {
-                    tareaService.desasignarEmpleado(empleadoSeleccionado);
-                    JOptionPane.showMessageDialog(this, "Empleado desasignado");
-                } catch (ServiceException ex) {
-                    JOptionPane.showMessageDialog(null, "Error al desasignar empleado: " + ex.getMessage());
-                }
-            }
-        } else {
-            JOptionPane.showMessageDialog(this, "Seleccione un empleado");
-        }
-    }
-
-
-    public void mostrarTodas() {
+    public void tableroKanban() {
         tareaService = new TareaService();
+        historialEstadoService = new HistorialEstadoService();
+        panelTarea = new JPanel();
+        panelTarea.setLayout(new GridLayout(1, 3));
+        StringBuilder kanban = new StringBuilder("ESTADOS\n\n");
         try {
-            ArrayList<Tarea> tareas = tareaService.obtenerTodasLasTareas();
-            StringBuilder tareasInfo = new StringBuilder("Lista de tareas:\n\n");
+            ArrayList<Tarea> tareasPorHacer = historialEstadoService.obtenerTareasPorEstado("Por hacer");
+            ArrayList<Tarea> tareasEnProgreso = historialEstadoService.obtenerTareasPorEstado("En progreso");
+            ArrayList<Tarea> tareasCompletadas = historialEstadoService.obtenerTareasPorEstado("Completada");
 
-            for (Tarea tarea : tareas) {
-                tareasInfo.append("ID: ").append(tarea.getId()).append("\n");
-                tareasInfo.append("Titulo: ").append(tarea.getTitulo()).append("\n");
-                tareasInfo.append("Descripcion: ").append(tarea.getDescripcion()).append("\n");
-                tareasInfo.append("Estimacion: ").append(tarea.getEstimacion()).append("\n");
-                tareasInfo.append("Horas Reales: ").append(tarea.getHorasReales()).append("\n");
-
-                int idEmpleado = tarea.getEmpleado_id();
-                if (idEmpleado != 0) {
-                    tareasInfo.append("ID de empleado asignado: ").append(tarea.getEmpleado_id()).append("\n");
-                } else {
-                    tareasInfo.append("-No hay ningun empleado asignado a esta tarea.\n");
-                }
-
-                int proyectoId = tarea.getIdProyecto();
-                if (proyectoId != 0){
-                    tareasInfo.append("ID del proyecto: ").append(tarea.getIdProyecto()).append("\n");
-                } else {
-                    tareasInfo.append("-Esta tarea no esta asignada a ningun proyecto.\n");
-                }
-
-                tareasInfo.append("\n");
+            kanban.append("Por hacer: \n");
+            for (Tarea tarea : tareasPorHacer){
+                kanban.append("-").append(tarea.getTitulo()).append("\n");
             }
-            JTextArea textArea = new JTextArea();
-            textArea.setEditable(false);
-            textArea.setText(tareasInfo.toString());
+            kanban.append("\nEn progreso:\n");
+            for (Tarea tarea : tareasEnProgreso){
+                kanban.append("-").append(tarea.getTitulo()).append("\n");
+            }
+            kanban.append("\nCompletadas:\n");
+            for (Tarea tarea : tareasCompletadas){
+                kanban.append("-").append(tarea.getTitulo()).append("\n");
+            }
+            JTextArea kanbanTextArea = new JTextArea(kanban.toString());
+            JScrollPane scrollPane = new JScrollPane(kanbanTextArea);
 
-            JScrollPane scrollPane = new JScrollPane(textArea);
-            JOptionPane.showMessageDialog(null, scrollPane, "Tareas", JOptionPane.INFORMATION_MESSAGE);
-        } catch (ServiceException e) {
-            JOptionPane.showMessageDialog(null, "Error al obtener la lista de tareas: " + e.getMessage());
+            JOptionPane.showMessageDialog(null, scrollPane, "Tablero Kanban", JOptionPane.PLAIN_MESSAGE);
+        } catch (ServiceException ex){
+            JOptionPane.showMessageDialog(null, "Error al obtener los datos");
         }
     }
 }

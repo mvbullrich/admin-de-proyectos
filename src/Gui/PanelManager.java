@@ -7,7 +7,7 @@ public class PanelManager {
     private PanelTarea panelTarea;
     private PanelEmpleado panelEmpleado;
     private MenuInicio menuInicio;
-    private PanelProyecto panelProyecto;
+    private PanelProyecto1 panelProyecto1;
 
     JFrame ventana;
     public PanelManager(){
@@ -16,7 +16,7 @@ public class PanelManager {
         panelTarea = new PanelTarea(this);
         panelEmpleado = new PanelEmpleado(this);
         menuInicio = new MenuInicio(this);
-        panelProyecto = new PanelProyecto(this);
+        panelProyecto1 = new PanelProyecto1(this);
 
         //mostrar(formularioTarea);
         //mostrar(formularioEmpleado);

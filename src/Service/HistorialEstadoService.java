@@ -1,6 +1,7 @@
 package Service;
 
 import Controlador.HistorialEstado;
+import Controlador.Tarea;
 import Model.DAOException;
 import Model.DAOHistorialEstado;
 
@@ -35,6 +36,22 @@ public class HistorialEstadoService {
         try{
             daoHistorialEstado.modificar(historial);
         } catch (DAOException e) {
+            throw new ServiceException(e.getMessage());
+        }
+    }
+
+    public ArrayList<HistorialEstado> obtenerHistorialPorTarea(int idTarea) throws ServiceException{
+        try{
+            return daoHistorialEstado.obtenerHistorialPorTarea(idTarea);
+        } catch (DAOException e){
+            throw new ServiceException(e.getMessage());
+        }
+    }
+
+    public ArrayList<Tarea> obtenerTareasPorEstado(String estado) throws ServiceException{
+        try {
+            return daoHistorialEstado.obtenerTareasPorEstado(estado);
+        } catch (DAOException e){
             throw new ServiceException(e.getMessage());
         }
     }

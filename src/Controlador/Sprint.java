@@ -41,10 +41,9 @@ public class Sprint {
 
     @Override
     public String toString() {
-        return "Sprint{" +
-                "id=" + id +
-                ", fechaInicio=" + fechaInicio +
-                ", fechaFin=" + fechaFin +
+        return "ID: " + id +
+                ", fechaInicio: " + fechaInicio +
+                ", fechaFin: " + fechaFin +
                 '}';
     }
 }

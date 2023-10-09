@@ -69,9 +69,9 @@ public class ProyectoService {
         }
     }
 
-    public void desasignarTarea(Tarea tarea, Proyecto proyecto) throws ServiceException{
+    public void desasignarTarea(Tarea tarea) throws ServiceException{
         try {
-            daoProyecto.desasignarTarea(tarea, proyecto);
+            daoProyecto.desasignarTarea(tarea);
         } catch (DAOException e) {
             throw new ServiceException(e.getMessage());
         }

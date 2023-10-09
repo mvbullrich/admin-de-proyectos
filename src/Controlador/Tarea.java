@@ -14,6 +14,7 @@ public class Tarea {
     private ArrayList<HistorialEstado> historialEstados;
     private int id_proyecto;
     private int id_sprint;
+    private int id_backlog;
 
     public Tarea(int id, String titulo, String descripcion, int estimacion, int horasReales) {
         this.id = id;
@@ -117,11 +118,19 @@ public class Tarea {
         this.id_sprint = id_sprint;
     }
 
+    public int getId_backlog() {
+        return id_backlog;
+    }
+
+    public void setId_backlog(int id_backlog) {
+        this.id_backlog = id_backlog;
+    }
+
     @Override
     public String toString() {
         return  "ID: " + id +
                 ", Titulo: " + titulo +
                 ", Descripcion: " + descripcion +
-                ", Estimacion = " + estimacion;
+                ", Estimacion: " + estimacion;
     }
 }

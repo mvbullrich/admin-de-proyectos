@@ -360,4 +360,28 @@ public class DAOTarea implements DAO<Tarea> {
             throw new DAOException(e.getMessage());
         }
     }
+
+    public Tarea buscarTareaPorEmpleado(int idEmpleado) throws DAOException {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        Tarea tarea = null;
+        try {
+            Class.forName(DB_JDBC_DRIVER);
+            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            preparedStatement = connection.prepareStatement("SELECT * FROM Tarea  WHERE empleado_id=?");
+            preparedStatement.setInt(1, idEmpleado);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                tarea = new Tarea();
+                //tarea.setId(resultSet.getInt("id"));
+                tarea.setTitulo(resultSet.getString("titulo"));
+                tarea.setDescripcion(resultSet.getString("descripcion"));
+                tarea.setEstimacion(resultSet.getInt("estimacion"));
+                //tarea.setHorasReales(resultSet.getInt("horasReales"));
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DAOException(e.getMessage());
+        }
+        return tarea;
+    }
 }

@@ -93,4 +93,12 @@ public class SprintService {
             throw new ServiceException(e.getMessage());
         }
     }
+
+    public ArrayList<Tarea> obtenerTareasPorSprint(int idSprint) throws ServiceException{
+        try{
+            return daoSprint.obtenerTareasPorSprint(idSprint);
+        } catch (DAOException e){
+            throw new ServiceException(e.getMessage());
+        }
+    }
 }

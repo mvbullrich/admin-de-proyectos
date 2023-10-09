@@ -13,15 +13,19 @@ public class EmpleadoService {
         daoEmpleado = new DAOEmpleado();
     }
 
-    public void guardarEmpleado(Empleado empleado) throws ServiceException{
-        try{
+    public void guardarEmpleado(Empleado empleado) throws ServiceException {
+        // Asegúrate de que la disponibilidad siempre sea true antes de guardar
+        empleado.setDisponible(true);
+
+        try {
             daoEmpleado.guardar(empleado);
             System.out.println("Empleado agregado correctamente");
-        }catch (DAOException e){
+        } catch (DAOException e) {
             System.out.println("Error al agregar el empleado: " + e.getMessage());
             throw new ServiceException(e.getMessage());
         }
     }
+
 
     public void eliminarEmpleado(int id) throws ServiceException{
         try{

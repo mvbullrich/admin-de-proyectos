@@ -2,7 +2,7 @@ package Controlador;
 
 import java.util.ArrayList;
 
-public class Empleado {
+public class Empleado{
     private int id;
     private String nombre;
     private double costoPorHora;
@@ -12,7 +12,7 @@ public class Empleado {
         this.id = id;
         this.nombre = nombre;
         this.costoPorHora = costoPorHora;
-        disponible = true; //asumo que todo nuevo empleado esta disponoble hasta que se le asigne una tarea o proyecto
+        this.disponible = true; //asumo que todo nuevo empleado esta disponoble hasta que se le asigne una tarea o proyecto
     }
 
     public Empleado(){}
@@ -42,6 +42,8 @@ public class Empleado {
     public void setDisponible(boolean disponible) {
         this.disponible = disponible;
     }
+
+
 
     @Override
     public String toString() {

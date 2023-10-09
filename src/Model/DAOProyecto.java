@@ -36,6 +36,11 @@ public class DAOProyecto implements DAO<Proyecto> {
         try {
             Class.forName(DB_JDBC_DRIVER);
             connection = DriverManager.getConnection(DB_URL,DB_USER,DB_PASSWORD);
+
+            PreparedStatement updateStatement = connection.prepareStatement("UPDATE Tarea SET id_proyecto = NULL WHERE id_proyecto = ?");
+            updateStatement.setInt(1, id);
+            updateStatement.executeUpdate();
+
             preparedStatement=connection.prepareStatement("DELETE FROM Proyecto  WHERE id=?");
             preparedStatement.setInt(1, id);
             int res=preparedStatement.executeUpdate();
@@ -164,7 +169,7 @@ public class DAOProyecto implements DAO<Proyecto> {
         }
     }
 
-    public void desasignarTarea(Tarea tarea, Proyecto proyecto) throws DAOException{
+    public void desasignarTarea(Tarea tarea) throws DAOException{
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         try{

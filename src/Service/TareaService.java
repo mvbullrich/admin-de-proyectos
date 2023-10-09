@@ -127,4 +127,12 @@ public class TareaService {
             throw new ServiceException(e.getMessage());
         }
     }
+
+    public Tarea buscarTareaPorEmpleado(int idEmpleado) throws ServiceException{
+        try{
+            return daoTarea.buscarTareaPorEmpleado(idEmpleado);
+        } catch (DAOException e){
+            throw new ServiceException(e.getMessage());
+        }
+    }
 }
