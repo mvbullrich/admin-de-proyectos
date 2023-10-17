@@ -19,27 +19,30 @@ public class PanelProyecto1 extends JPanel{
     TareaService tareaService;
     PanelManager panel;
     JPanel panelProyecto;
-    JLabel jLabelId = new JLabel("ID: ");
+    JLabel jLabel = new JLabel("Seleccione un proyecto: ");
     JLabel jLabelTitulo = new JLabel("Titulo: ");
     JLabel jLabelDescripcion = new JLabel("Descripción:");
     JLabel jLabelFechaInicio = new JLabel("Fecha de Inicio (YYYY-MM-DD):");
     JLabel jLabelFechaFin = new JLabel("Fecha de Fin (YYYY-MM-DD):");
+    JLabel jLabelId = new JLabel("ID: ");
+    JTextField jTextFieldId = new JTextField();
 
-    JTextField jTextFieldId = new JTextField(10);
     JTextField jTextFieldTitulo = new JTextField(30);
     JTextField jTextFieldDescripcion = new JTextField(50);
     JTextField jTextFieldFechaInicio = new JTextField(10);
     JTextField jTextFieldFechaFin = new JTextField(10);
     JComboBox<Proyecto> jComboBoxProyecto;
+    JComboBox<Tarea> jComboBoxTareas = new JComboBox<>();
 
     JButton jButtonGuardar;
     JButton jButtonSalir = new JButton("Salir");
     JButton jButtonMisProyectos = new JButton("Mis proyectos");
     JButton jButtonEliminar = new JButton("Eliminar");
     JButton jButtonModificar = new JButton("Modificar");
-    JButton jButtonMostrar = new JButton("Mostrar datos");
+    JButton jButtonMostrar = new JButton("Ver tareas asignadas");
     JButton jButtonCostoHoras = new JButton("Calcular costo horas");
     JButton jButtonCostoDinero = new JButton("Calcular costo dinero");
+    JButton jButtonTareas = new JButton("Ir a tareas");
     JPanel jPanelBotones;
 
     public PanelProyecto1(PanelManager panel){
@@ -57,8 +60,8 @@ public class PanelProyecto1 extends JPanel{
         setLayout(new BorderLayout());
         add(panelProyecto, BorderLayout.CENTER);
 
-        jPanelBotones.add(jButtonGuardar);
         jPanelBotones.add(jButtonMisProyectos);
+        jPanelBotones.add(jButtonGuardar);
         jPanelBotones.add(jButtonSalir);
         add(jPanelBotones, BorderLayout.SOUTH);
 
@@ -99,13 +102,10 @@ public class PanelProyecto1 extends JPanel{
 
         panelProyecto.add(jLabelTitulo);
         panelProyecto.add(jTextFieldTitulo);
-
         panelProyecto.add(jLabelDescripcion);
         panelProyecto.add(jTextFieldDescripcion);
-
         panelProyecto.add(jLabelFechaInicio);
         panelProyecto.add(jTextFieldFechaInicio);
-
         panelProyecto.add(jLabelFechaFin);
         panelProyecto.add(jTextFieldFechaFin);
 
@@ -139,31 +139,56 @@ public class PanelProyecto1 extends JPanel{
         try {
             proyecto.setTitulo(jTextFieldTitulo.getText());
             proyecto.setDescripcion(jTextFieldDescripcion.getText());
-            proyecto.setFechaInicio(LocalDate.parse(jTextFieldFechaInicio.getText()));
-            proyecto.setFechaFin(LocalDate.parse(jTextFieldFechaFin.getText()));
-            if (proyecto.getTitulo().isEmpty() || proyecto.getDescripcion().isEmpty()){
-                throw new IllegalArgumentException();
 
+            String fechaInicioText = jTextFieldFechaInicio.getText();
+            if(!fechaInicioText.isEmpty()){
+                proyecto.setFechaInicio(LocalDate.parse(fechaInicioText));
+            } else {
+                throw new IllegalArgumentException("La fecha de inicio es obligatoria.");
             }
-            if (proyecto.getFechaInicio().isAfter(proyecto.getFechaFin())){
-                JOptionPane.showMessageDialog(null, "La fecha de inicio no puede ser posterior a la fecha de fin");
-                return;
+            String fechaFinText = jTextFieldFechaFin.getText();
+            if (!fechaFinText.isEmpty()){
+                proyecto.setFechaFin(LocalDate.parse(fechaFinText));
+                if (proyecto.getFechaInicio().isAfter(proyecto.getFechaFin())){
+                    JOptionPane.showMessageDialog(null, "La fecha de inicio no puede ser posterior a la fecha de fin.");
+                    return;
+                }
+            } else {
+                throw new IllegalArgumentException("La fecha de fin es obligatoria");
             }
-            else{
+            if (proyecto.getTitulo().isEmpty()){
+                throw new IllegalArgumentException("El titulo es obligatorio.");
+            } else if (proyecto.getDescripcion().isEmpty()) {
+                proyecto.setDescripcion("");
+            } else{
                 proyectoService.guardarProyecto(proyecto);
                 JOptionPane.showMessageDialog(null, "Proyecto guardado exitosamente");
-                jTextFieldTitulo.setText("");
-                jTextFieldDescripcion.setText("");
-                jTextFieldFechaInicio.setText("");
-                jTextFieldFechaFin.setText("");
             }
         } catch (ServiceException serEx) {
             serEx.printStackTrace();
             JOptionPane.showMessageDialog(null, "No se pudo guardar");
         } catch (IllegalArgumentException ex){
-            JOptionPane.showMessageDialog(null,"Error. Se deben llenar todos los campos");
+            JOptionPane.showMessageDialog(null,ex.getMessage());
         } catch(DateTimeParseException e) {
             JOptionPane.showMessageDialog(null, "El formato de fecha ingresado no es válido");
+        }
+    }
+
+    private void actualizarCamposDeTexto() {
+        Proyecto proyectoSeleccionado = (Proyecto) jComboBoxProyecto.getSelectedItem();
+        if (proyectoSeleccionado != null) {
+            jTextFieldId.setText(String.valueOf(proyectoSeleccionado.getId()));
+            jTextFieldId.setEditable(false);
+            jTextFieldTitulo.setText(proyectoSeleccionado.getTitulo());
+            jTextFieldDescripcion.setText(proyectoSeleccionado.getDescripcion());
+            jTextFieldFechaInicio.setText(proyectoSeleccionado.getFechaInicio().toString());
+            jTextFieldFechaFin.setText(proyectoSeleccionado.getFechaFin().toString());
+            jComboBoxTareas.removeAllItems();
+        } else {
+            jTextFieldTitulo.setText("");
+            jTextFieldDescripcion.setText("");
+            jTextFieldFechaInicio.setText("");
+            jTextFieldFechaFin.setText("");
         }
     }
 
@@ -171,7 +196,7 @@ public class PanelProyecto1 extends JPanel{
         proyectoService = new ProyectoService();
         tareaService = new TareaService();
         panelProyecto = new JPanel();
-        panelProyecto.setLayout(new GridLayout(1,8));
+        panelProyecto.setLayout(new GridLayout(7,2));
         jButtonSalir = new JButton("Salir");
         jPanelBotones = new JPanel();
         jComboBoxProyecto = new JComboBox<>();
@@ -183,19 +208,37 @@ public class PanelProyecto1 extends JPanel{
         } catch (ServiceException e){
             JOptionPane.showMessageDialog(null, "Error al obtener los proyectos");
         }
+        actualizarCamposDeTexto();
+        panelProyecto.add(jLabel);
         panelProyecto.add(jComboBoxProyecto);
+        panelProyecto.add(jLabelId);
+        panelProyecto.add(jTextFieldId);
+        panelProyecto.add(jLabelTitulo);
+        panelProyecto.add(jTextFieldTitulo);
+        panelProyecto.add(jLabelDescripcion);
+        panelProyecto.add(jTextFieldDescripcion);
+        panelProyecto.add(jLabelFechaInicio);
+        panelProyecto.add(jTextFieldFechaInicio);
+        panelProyecto.add(jLabelFechaFin);
+        panelProyecto.add(jTextFieldFechaFin);
         setLayout(new BorderLayout());
         add(panelProyecto, BorderLayout.CENTER);
 
         jPanelBotones.add(jButtonEliminar);
         jPanelBotones.add(jButtonModificar);
         jPanelBotones.add(jButtonMostrar);
+        jPanelBotones.add(jButtonTareas);
         jPanelBotones.add(jButtonCostoHoras);
         jPanelBotones.add(jButtonCostoDinero);
         jPanelBotones.add(jButtonSalir);
         add(jPanelBotones, BorderLayout.SOUTH);
 
-        //Proyecto proyecto = (Proyecto) jComboBoxProyecto.getSelectedItem();
+        jComboBoxProyecto.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actualizarCamposDeTexto();
+            }
+        });
 
         jButtonSalir.addActionListener(new ActionListener() {
             @Override
@@ -216,6 +259,7 @@ public class PanelProyecto1 extends JPanel{
                         if (confirmacion == JOptionPane.YES_OPTION){
                             proyectoService.eliminarProyecto(proyectoSeleccionado.getId());
                             JOptionPane.showMessageDialog(null, "Proyecto eliminado exitosamente");
+                            jComboBoxProyecto.removeItem(proyectoSeleccionado);
                             jComboBoxProyecto.setSelectedIndex(-1);
                         }
                     } catch (NumberFormatException ex) {
@@ -233,15 +277,51 @@ public class PanelProyecto1 extends JPanel{
             @Override
             public void actionPerformed(ActionEvent e) {
                 Proyecto proyectoSeleccionado = (Proyecto) jComboBoxProyecto.getSelectedItem();
-                if (proyectoSeleccionado != null){
-                    PanelProyecto1 panelProyecto1 = new PanelProyecto1(panel);
-                    panelProyecto1.modificarProyecto(proyectoSeleccionado);
-                    panel.mostrar(panelProyecto1);
+                if (proyectoSeleccionado != null) {
+                    try {
+                        proyectoSeleccionado.setTitulo(jTextFieldTitulo.getText());
+                        proyectoSeleccionado.setDescripcion(jTextFieldDescripcion.getText());
+                        String fechaInicioText = jTextFieldFechaInicio.getText();
+                        if (!fechaInicioText.isEmpty()) {
+                            proyectoSeleccionado.setFechaInicio(LocalDate.parse(fechaInicioText));
+                        } else {
+                            throw new IllegalArgumentException("La fecha de inicio es obligatoria.");
+                        }
+                        String fechaFinText = jTextFieldFechaFin.getText();
+                        if (!fechaFinText.isEmpty()) {
+                            proyectoSeleccionado.setFechaFin(LocalDate.parse(fechaFinText));
+                            if (proyectoSeleccionado.getFechaInicio().isAfter(proyectoSeleccionado.getFechaFin())) {
+                                JOptionPane.showMessageDialog(null, "La fecha de inicio no puede ser posterior a la fecha de fin");
+                                return;
+                            }
+                        } else {
+                            throw new IllegalArgumentException("La fecha de fin es obligatoria.");
+                        }
+                        if (proyectoSeleccionado.getTitulo().isEmpty()) {
+                            throw new IllegalArgumentException("El título es obligatorio.");
+                        } else if (proyectoSeleccionado.getDescripcion().isEmpty()) {
+                            proyectoSeleccionado.setDescripcion("");
+                        }
+                        int confirmacion = JOptionPane.showConfirmDialog(null, "¿Seguro que quieres modificar el proyecto?");
+                        if (confirmacion == JOptionPane.YES_OPTION) {
+                            proyectoService.modificar(proyectoSeleccionado);
+                            JOptionPane.showMessageDialog(null, "Proyecto modificado exitosamente");
+                        }
+                    } catch (ServiceException serEx) {
+                        serEx.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "No se pudo guardar");
+                    } catch (IllegalArgumentException ex) {
+                        JOptionPane.showMessageDialog(null, ex.getMessage());
+                    } catch (DateTimeParseException ex) {
+                        JOptionPane.showMessageDialog(null, "El formato de fecha ingresado no es válido");
+                    }
                 } else {
                     JOptionPane.showMessageDialog(null, "Seleccione un proyecto");
                 }
             }
         });
+
+
 
         jButtonMostrar.addActionListener(new ActionListener() {
             @Override
@@ -252,11 +332,6 @@ public class PanelProyecto1 extends JPanel{
                         int idProyecto = proyectoSeleccionado.getId();
                         proyectoService.buscarProyecto(idProyecto);
                         StringBuilder proyctosInfo = new StringBuilder("PROYECTO:\n");
-                        proyctosInfo.append("ID: ").append(proyectoSeleccionado.getId()).append("\n");
-                        proyctosInfo.append("Titulo: ").append(proyectoSeleccionado.getTitulo()).append("\n");
-                        proyctosInfo.append("Descripcion: ").append(proyectoSeleccionado.getDescripcion()).append("\n");
-                        proyctosInfo.append("Fecha Inicio: ").append(proyectoSeleccionado.getFechaInicio()).append("\n");
-                        proyctosInfo.append("Fecha Fin: ").append(proyectoSeleccionado.getFechaFin()).append("\n");
 
                         ArrayList<Tarea> tareas = tareaService.obtenerTareasAsignadas(idProyecto);
                         if (!tareas.isEmpty()) {
@@ -310,67 +385,13 @@ public class PanelProyecto1 extends JPanel{
                 }
             }
         });
-    }
 
-    public void modificarProyecto(Proyecto proyecto){
-        proyectoService = new ProyectoService();
-        panelProyecto = new JPanel();
-        panelProyecto.setLayout(new GridLayout(6, 2));
-
-        jTextFieldTitulo = new JTextField(proyecto.getTitulo());
-        jTextFieldDescripcion = new JTextField(proyecto.getDescripcion());
-        jTextFieldFechaInicio = new JTextField(proyecto.getFechaInicio().toString());
-        jTextFieldFechaFin = new JTextField(proyecto.getFechaFin().toString());
-
-        jButtonModificar = new JButton("Modificar");
-        jButtonSalir = new JButton("Atrás");
-        jPanelBotones = new JPanel();
-
-        panelProyecto.add(jLabelTitulo);
-        panelProyecto.add(jTextFieldTitulo);
-        panelProyecto.add(jLabelDescripcion);
-        panelProyecto.add(jTextFieldDescripcion);
-        panelProyecto.add(jLabelFechaInicio);
-        panelProyecto.add(jTextFieldFechaInicio);
-        panelProyecto.add(jLabelFechaFin);
-        panelProyecto.add(jTextFieldFechaFin);
-
-        setLayout(new BorderLayout());
-        add(panelProyecto, BorderLayout.CENTER);
-
-        jPanelBotones.add(jButtonModificar);
-        jPanelBotones.add(jButtonSalir);
-        add(jPanelBotones, BorderLayout.SOUTH);
-
-        jButtonModificar.addActionListener(new ActionListener() {
+        jButtonTareas.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    proyecto.setTitulo(jTextFieldTitulo.getText());
-                    proyecto.setDescripcion(jTextFieldDescripcion.getText());
-                    proyecto.setFechaInicio(LocalDate.parse(jTextFieldFechaInicio.getText()));
-                    proyecto.setFechaFin(LocalDate.parse(jTextFieldFechaFin.getText()));
-                    proyectoService.modificar(proyecto);
-                    JOptionPane.showMessageDialog(null, "El proyecto se modificó exitosamente");
-                } catch (ServiceException ex) {
-                    JOptionPane.showMessageDialog(null, "Error al modificar el proyecto");
-                } catch (IllegalArgumentException ex){
-                    JOptionPane.showMessageDialog(null,"Error. Se deben llenar todos los campos");
-                } catch(DateTimeParseException ex) {
-                    JOptionPane.showMessageDialog(null, "El formato de fecha ingresado no es válido");
-                }
-                jTextFieldTitulo.setText("");
-                jTextFieldDescripcion.setText("");
-                jTextFieldFechaInicio.setText("");
-                jTextFieldFechaFin.setText("");
-            }
-        });
-        jButtonSalir.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                PanelProyecto1 panelProyecto1 = new PanelProyecto1(panel);
-                panelProyecto1.menuProyectos();
-                panel.mostrar(panelProyecto1);
+                PanelTarea panelTarea1 = new PanelTarea(panel);
+                panelTarea1.menuTareas();
+                panel.mostrar(panelTarea1);
             }
         });
     }

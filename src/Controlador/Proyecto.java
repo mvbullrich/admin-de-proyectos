@@ -115,10 +115,6 @@ public class Proyecto {
 
     @Override
     public String toString() {
-        return //"Proyecto" +
-                "\n - Titulo = " + titulo + '\'' +
-                "\n - Descripcion = " + descripcion +
-                "\n - FechaInicio = " + fechaInicio +
-                "\n - FechaFin = " + fechaFin;
+        return titulo;
     }
 }

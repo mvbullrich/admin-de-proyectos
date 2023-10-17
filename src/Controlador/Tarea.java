@@ -128,9 +128,6 @@ public class Tarea {
 
     @Override
     public String toString() {
-        return  "ID: " + id +
-                ", Titulo: " + titulo +
-                ", Descripcion: " + descripcion +
-                ", Estimacion: " + estimacion;
+        return  titulo;
     }
 }

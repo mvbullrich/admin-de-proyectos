@@ -20,6 +20,7 @@ public class PanelSprint extends JPanel {
     PanelManager panel;
     JPanel panelSprint;
 
+    JLabel jLabel = new JLabel("Seleccione un sprint: ");
     JLabel jLabelId = new JLabel("ID: ");
     JTextField jTextFieldId = new JTextField();
     JLabel jLabelFechaInicio = new JLabel("Fecha Inicio (YYYY-MM-DD): ");
@@ -32,7 +33,7 @@ public class PanelSprint extends JPanel {
     JButton jButtonEliminar = new JButton("Eliminar");
     JButton jButtonModificar = new JButton("Modificar");
     JButton jButtonSalir;
-    JButton jButtonMostrar = new JButton("Mostrar datos");
+    JButton jButtonMostrar = new JButton("Ver tareas asignadas");
     JButton jButtonSprints = new JButton("Mis sprints");
 
     JPanel jPanelBotones;
@@ -53,8 +54,8 @@ public class PanelSprint extends JPanel {
         setLayout(new BorderLayout());
         add(panelSprint, BorderLayout.CENTER);
 
-        jPanelBotones.add(jButtonGuardar);
         jPanelBotones.add(jButtonSprints);
+        jPanelBotones.add(jButtonGuardar);
         jPanelBotones.add(jButtonSalir);
         add(jPanelBotones, BorderLayout.CENTER);
 
@@ -135,8 +136,15 @@ public class PanelSprint extends JPanel {
                 JOptionPane.showMessageDialog(null, "Se deben completar todos los campos");
                 return;
             }
-            LocalDate fechaInicio = LocalDate.parse(fechaInicioStr);
-            LocalDate fechaFin = LocalDate.parse(fechaFinStr);
+            LocalDate fechaInicio = null;
+            LocalDate fechaFin = null;
+            try {
+                fechaInicio = LocalDate.parse(fechaInicioStr);
+                fechaFin = LocalDate.parse(fechaFinStr);
+            } catch (DateTimeParseException ex) {
+                JOptionPane.showMessageDialog(null, "El formato de fecha ingresado no es válido, debe ser YYYY-MM-DD");
+                return;
+            }
             if (fechaInicio.isAfter(fechaFin)) {
                 JOptionPane.showMessageDialog(null, "La fecha de inicio no puede ser posterior a la fecha de fin");
                 return;
@@ -152,8 +160,20 @@ public class PanelSprint extends JPanel {
             JOptionPane.showMessageDialog(null, "No se pudo guardar");
         } catch (IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(null, "Error. Se deben llenar todos los campos");
-        } catch (DateTimeParseException e) {
-            JOptionPane.showMessageDialog(null, "El formato de fecha ingresado no es válido, debe ser YYYY-MM-DD");
+        }
+    }
+
+    public void actualizarTextField(){
+        Sprint sprint = (Sprint) jComboBoxSprint.getSelectedItem();
+        if (sprint != null){
+            jTextFieldId.setText(String.valueOf(sprint.getId()));
+            jTextFieldId.setEditable(false);
+            jTextFieldFechaInicio.setText(sprint.getFechaInicio().toString());
+            jTextFieldFehaFin.setText(sprint.getFechaFin().toString());
+        } else {
+            jTextFieldId.setText("");
+            jTextFieldFechaInicio.setText("");
+            jTextFieldFehaFin.setText("");
         }
     }
 
@@ -174,15 +194,30 @@ public class PanelSprint extends JPanel {
         } catch (ServiceException e){
             JOptionPane.showMessageDialog(null, "Error al obtener los sprints");
         }
+        actualizarTextField();
+        panelSprint.add(jLabel);
         panelSprint.add(jComboBoxSprint);
+        panelSprint.add(jLabelId);
+        panelSprint.add(jTextFieldId);
+        panelSprint.add(jLabelFechaInicio);
+        panelSprint.add(jTextFieldFechaInicio);
+        panelSprint.add(jLabelFechaFin);
+        panelSprint.add(jTextFieldFehaFin);
         setLayout(new BorderLayout());
         add(panelSprint, BorderLayout.CENTER);
 
-        jPanelBotones.add(jButtonEliminar);
-        jPanelBotones.add(jButtonModificar);
         jPanelBotones.add(jButtonMostrar);
+        jPanelBotones.add(jButtonModificar);
+        jPanelBotones.add(jButtonEliminar);
         jPanelBotones.add(jButtonSalir);
         add(jPanelBotones, BorderLayout.SOUTH);
+
+        jComboBoxSprint.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actualizarTextField();
+            }
+        });
 
         jButtonEliminar.addActionListener(new ActionListener() {
             @Override
@@ -209,10 +244,37 @@ public class PanelSprint extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Sprint sprintSeleccionado = (Sprint) jComboBoxSprint.getSelectedItem();
-                if (sprintSeleccionado != null){
-                    PanelSprint panelSprint1 = new PanelSprint(panel);
-                    panelSprint1.modificar(sprintSeleccionado);
-                    panel.mostrar(panelSprint1);
+                if (sprintSeleccionado != null) {
+                    try {
+                        String fechaInicioStr = jTextFieldFechaInicio.getText();
+                        String fechaFinStr = jTextFieldFehaFin.getText();
+                        if (fechaInicioStr.isEmpty() || fechaFinStr.isEmpty()) {
+                            JOptionPane.showMessageDialog(null, "Se deben completar todos los campos");
+                            return;
+                        }
+                        LocalDate fechaInicio = null;
+                        LocalDate fechaFin = null;
+                        try {
+                            fechaInicio = LocalDate.parse(fechaInicioStr);
+                            fechaFin = LocalDate.parse(fechaFinStr);
+                        } catch (DateTimeParseException ex) {
+                            JOptionPane.showMessageDialog(null, "El formato de fecha ingresado no es válido, debe ser YYYY-MM-DD");
+                            return;
+                        }
+                        if (fechaInicio.isAfter(fechaFin)) {
+                            JOptionPane.showMessageDialog(null, "La fecha de inicio no puede ser posterior a la fecha de fin");
+                            return;
+                        }
+                        int confirmacion = JOptionPane.showConfirmDialog(null, "¿Seguro que quieres modificar este sprint?");
+                        if (confirmacion == JOptionPane.YES_OPTION) {
+                            sprintSeleccionado.setFechaInicio(fechaInicio);
+                            sprintSeleccionado.setFechaFin(fechaFin);
+                            sprintService.modificarSprint(sprintSeleccionado);
+                            JOptionPane.showMessageDialog(null, "Sprint modificado exitosamente");
+                        }
+                    } catch (ServiceException serEx) {
+                        JOptionPane.showMessageDialog(null, "Error al modificar el sprint");
+                    }
                 } else {
                     JOptionPane.showMessageDialog(null, "Seleccione un sprint");
                 }
@@ -226,10 +288,7 @@ public class PanelSprint extends JPanel {
                 if (sprintSeleccionado != null){
                     try{
                         sprintService.buscarSpint(sprintSeleccionado.getId());
-                        StringBuilder infoSprint = new StringBuilder("SPRINT\n");
-                        infoSprint.append("ID: ").append(sprintSeleccionado.getId()).append("\n");
-                        infoSprint.append("Fecha de inicio: ").append(sprintSeleccionado.getFechaInicio()).append("\n");
-                        infoSprint.append("Fecha Fin: ").append(sprintSeleccionado.getFechaFin()).append("\n");
+                        StringBuilder infoSprint = new StringBuilder("SPRINT ").append(sprintSeleccionado.getId()).append("\n");
 
                         ArrayList<Tarea> tareas = sprintService.obtenerTareasPorSprint(sprintSeleccionado.getId());
                         if (!tareas.isEmpty()){
@@ -255,62 +314,6 @@ public class PanelSprint extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 PanelSprint panelSprint1 = new PanelSprint(panel);
                 panelSprint1.menu();
-                panel.mostrar(panelSprint1);
-            }
-        });
-    }
-
-    public void modificar(Sprint sprint){
-        sprintService = new SprintService();
-        panelSprint = new JPanel();
-        panelSprint.setLayout(new GridLayout(3,2));
-
-        jTextFieldId = new JTextField(String.valueOf(sprint.getId()));
-        jTextFieldId.setEditable(false);
-        jTextFieldFechaInicio = new JTextField(String.valueOf(sprint.getFechaInicio()));
-        jTextFieldFehaFin = new JTextField(String.valueOf(sprint.getFechaFin()));
-
-        jButtonModificar = new JButton("Modificar");
-        jButtonSalir = new JButton("Atrás");
-        jPanelBotones = new JPanel();
-
-        panelSprint.add(jLabelId);
-        panelSprint.add(jTextFieldId);
-        panelSprint.add(jLabelFechaInicio);
-        panelSprint.add(jTextFieldFechaInicio);
-        panelSprint.add(jLabelFechaFin);
-        panelSprint.add(jTextFieldFehaFin);
-
-        setLayout(new BorderLayout());
-        add(panelSprint, BorderLayout.CENTER);
-
-        jPanelBotones.add(jButtonModificar);
-        jPanelBotones.add(jButtonSalir);
-        add(jPanelBotones, BorderLayout.SOUTH);
-
-        jButtonModificar.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try{
-                    sprint.setFechaInicio(LocalDate.parse(jTextFieldFechaInicio.getText()));
-                    sprint.setFechaFin(LocalDate.parse(jTextFieldFehaFin.getText()));
-                    sprintService.modificarSprint(sprint);
-                    JOptionPane.showMessageDialog(null, "Sprint modificado exitosamente");
-                } catch (ServiceException serEx){
-                    JOptionPane.showMessageDialog(null, "Error al modificar el sprint");
-                } catch (IllegalArgumentException ex) {
-                    JOptionPane.showMessageDialog(null, "Error. Se deben llenar todos los campos");
-                } catch (DateTimeParseException ex) {
-                    JOptionPane.showMessageDialog(null, "El formato de fecha ingresado no es válido, debe ser YYYY-MM-DD");
-                }
-            }
-        });
-
-        jButtonSalir.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                PanelSprint panelSprint1 = new PanelSprint(panel);
-                panelSprint1.menuSprints();
                 panel.mostrar(panelSprint1);
             }
         });

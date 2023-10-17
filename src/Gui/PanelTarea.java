@@ -2,11 +2,9 @@ package Gui;
 
 import Controlador.Empleado;
 import Controlador.HistorialEstado;
+import Controlador.Proyecto;
 import Controlador.Tarea;
-import Service.EmpleadoService;
-import Service.HistorialEstadoService;
-import Service.ServiceException;
-import Service.TareaService;
+import Service.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,9 +18,11 @@ public class PanelTarea extends JPanel {
     TareaService tareaService;
     EmpleadoService empleadoService;
     HistorialEstadoService historialEstadoService;
+    ProyectoService proyectoService;
     PanelManager panel;
     JPanel panelTarea;
 
+    JLabel jLabel = new JLabel("Seleccione una tarea: ");
     JLabel jLabelId = new JLabel("ID: ");
     JLabel jlabelTitulo = new JLabel("Título:");
     JLabel jLabelDescripcion = new JLabel("Descripción:");
@@ -50,6 +50,7 @@ public class PanelTarea extends JPanel {
     JButton jButtonEstado = new JButton("Actualizar estado");
     JButton jButtonMostrarEstados = new JButton("Mostrar estados");
     JButton jButtonKanban = new JButton("Tablero Kanban");
+    JButton jButtonEmpleados = new JButton("Ir a empleados");
 
     JPanel jPanelBotones;
 
@@ -66,8 +67,8 @@ public class PanelTarea extends JPanel {
         setLayout(new BorderLayout());
         add(panelTarea, BorderLayout.CENTER);
 
-        jPanelBotones.add(jButtonGuardar);
         jPanelBotones.add(jButtonMisTareas);
+        jPanelBotones.add(jButtonGuardar);
         jPanelBotones.add(jButtonKanban);
         jPanelBotones.add(jButtonSalir);
         add(jPanelBotones, BorderLayout.SOUTH);
@@ -139,23 +140,39 @@ public class PanelTarea extends JPanel {
                 try {
                     tarea.setTitulo(jTextFieldTitulo.getText());
                     tarea.setDescripcion(jTextFieldDescripcion.getText());
-                    tarea.setEstimacion(Integer.parseInt(jTextFieldEstimacion.getText()));
-                    tarea.setHorasReales(Integer.parseInt((jTextFieldHorasReales.getText())));
-                    tarea.setEmpleado_id(0);
-                    if (tarea.getTitulo().isEmpty() && tarea.getDescripcion().isEmpty()) {
-                        throw new IllegalArgumentException();
-                    } else {
-                        tareaService.guardarTarea(tarea);
-                        JOptionPane.showMessageDialog(null, "Tarea guardada exitosamente");
-                        jTextFieldTitulo.setText("");
-                        jTextFieldDescripcion.setText("");
-                        jTextFieldEstimacion.setText("");
-                        jTextFieldHorasReales.setText("");
+                    String estimacionText = jTextFieldEstimacion.getText();
+                    int estimacion = 0;
+                    try {
+                        if (!estimacionText.isEmpty()) {
+                            estimacion = Integer.parseInt(estimacionText);
+                        }
+                    } catch (NumberFormatException ex) {
+                        throw new IllegalArgumentException("La estimación debe ser un número válido.");
                     }
+                    tarea.setEstimacion(estimacion);
+                    String horasRealesText = jTextFieldHorasReales.getText();
+                    int horasReales = 0;
+                    try {
+                        if (!horasRealesText.isEmpty()) {
+                            horasReales = Integer.parseInt(horasRealesText);
+                        }
+                    } catch (NumberFormatException ex) {
+                        throw new IllegalArgumentException("Las horas reales deben ser un número válido.");
+                    }
+                    tarea.setHorasReales(horasReales);
+                    if (tarea.getTitulo().isEmpty()) {
+                        throw new IllegalArgumentException("El título es un campo obligatorio.");
+                    }
+                    tareaService.guardarTarea(tarea);
+                    JOptionPane.showMessageDialog(null, "Tarea guardada exitosamente");
+                    jTextFieldTitulo.setText("");
+                    jTextFieldDescripcion.setText("");
+                    jTextFieldEstimacion.setText("");
+                    jTextFieldHorasReales.setText("");
                 } catch (ServiceException serEx) {
                     JOptionPane.showMessageDialog(null, "No se pudo guardar la tarea");
                 } catch (IllegalArgumentException ex) {
-                    JOptionPane.showMessageDialog(null, "Error. Se deben llenar los campos con valores correctos");
+                    JOptionPane.showMessageDialog(null, ex.getMessage());
                 }
             }
         });
@@ -170,10 +187,30 @@ public class PanelTarea extends JPanel {
         });
     }
 
+    public void actualizarTextField(){
+        Tarea tareaSeleccionada = (Tarea) jComboBoxTareas.getSelectedItem();
+        if (tareaSeleccionada != null){
+            jTextFieldId.setText(String.valueOf(tareaSeleccionada.getId()));
+            jTextFieldId.setEditable(false);
+            jTextFieldTitulo.setText(tareaSeleccionada.getTitulo());
+            jTextFieldDescripcion.setText(tareaSeleccionada.getDescripcion());
+            jTextFieldEstimacion.setText(String.valueOf(tareaSeleccionada.getEstimacion()));
+            jTextFieldHorasReales.setText(String.valueOf(tareaSeleccionada.getHorasReales()));
+        } else {
+            jTextFieldId.setText("");
+            jTextFieldTitulo.setText("");
+            jTextFieldDescripcion.setText("");
+            jTextFieldEstimacion.setText("");
+            jTextFieldHorasReales.setText("");
+        }
+    }
+
     public void menuTareas(){
         tareaService = new TareaService();
+        empleadoService = new EmpleadoService();
+        proyectoService = new ProyectoService();
         panelTarea = new JPanel();
-        panelTarea.setLayout(new GridLayout(5,5));
+        panelTarea.setLayout(new GridLayout(6,2));
         jButtonSalir = new JButton("Salir");
         jPanelBotones = new JPanel();
         jComboBoxTareas = new JComboBox<>();
@@ -185,17 +222,37 @@ public class PanelTarea extends JPanel {
         } catch (ServiceException e){
             JOptionPane.showMessageDialog(null, "Error al obtener las tareas");
         }
+        actualizarTextField();
+        panelTarea.add(jLabel);
         panelTarea.add(jComboBoxTareas);
+        panelTarea.add(jLabelId);
+        panelTarea.add(jTextFieldId);
+        panelTarea.add(jlabelTitulo);
+        panelTarea.add(jTextFieldTitulo);
+        panelTarea.add(jLabelDescripcion);
+        panelTarea.add(jTextFieldDescripcion);
+        panelTarea.add(jLabelEstimacion);
+        panelTarea.add(jTextFieldEstimacion);
+        panelTarea.add(jLabelHorasReales);
+        panelTarea.add(jTextFieldHorasReales);
         setLayout(new BorderLayout());
         add(panelTarea, BorderLayout.CENTER);
 
-        jPanelBotones.add(jButtonEliminar);
-        jPanelBotones.add(jButtonModificar);
-        jPanelBotones.add(jButtonMostrar);
-        jPanelBotones.add(jButtonEstado);
         jPanelBotones.add(jButtonMostrarEstados);
+        jPanelBotones.add(jButtonEstado);
+        jPanelBotones.add(jButtonMostrar);
+        jPanelBotones.add(jButtonModificar);
+        jPanelBotones.add(jButtonEliminar);
+        jPanelBotones.add(jButtonEmpleados);
         jPanelBotones.add(jButtonSalir);
         add(jPanelBotones, BorderLayout.SOUTH);
+
+        jComboBoxTareas.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actualizarTextField();
+            }
+        });
 
         jButtonSalir.addActionListener(new ActionListener() {
             @Override
@@ -216,6 +273,7 @@ public class PanelTarea extends JPanel {
                         if (confirmacion == JOptionPane.YES_OPTION){
                             tareaService.eliminarTarea(tareaSeleccionada.getId());
                             JOptionPane.showMessageDialog(null, "La tarea se eliminó exitosamente");
+                            jComboBoxTareas.removeItem(tareaSeleccionada);
                             jComboBoxTareas.setSelectedIndex(-1);
                         }
                     } catch (ServiceException ex){
@@ -231,10 +289,51 @@ public class PanelTarea extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Tarea tarea = (Tarea) jComboBoxTareas.getSelectedItem();
-                if(tarea != null){
-                    PanelTarea panelTarea1 = new PanelTarea(panel);
-                    panelTarea1.modificarTarea(tarea);
-                    panel.mostrar(panelTarea1);
+                if (tarea != null) {
+                    String titulo = jTextFieldTitulo.getText();
+                    String descripcion = jTextFieldDescripcion.getText();
+                    String estimacionText = jTextFieldEstimacion.getText();
+                    String horasRealesText = jTextFieldHorasReales.getText();
+                    int estimacion = 0;
+                    int horasReales = 0;
+                    if (titulo.isEmpty()) {
+                        JOptionPane.showMessageDialog(null, "El título no puede estar vacío");
+                        return;
+                    }
+                    try {
+                        if (!estimacionText.isEmpty()) {
+                            estimacion = Integer.parseInt(estimacionText);
+                        }
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(null, "La estimación debe ser un número válido.");
+                        return;
+                    }
+                    try {
+                        if (!horasRealesText.isEmpty()) {
+                            horasReales = Integer.parseInt(horasRealesText);
+                        }
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(null, "Las horas reales deben ser un número válido.");
+                        return;
+                    }
+                    if (descripcion.isEmpty()) {
+                        descripcion = "";
+                    }
+                    int confirmacion = JOptionPane.showConfirmDialog(null, "¿Seguro que quieres modificar esta tarea?");
+                    if (confirmacion == JOptionPane.YES_OPTION) {
+                        tarea.setTitulo(titulo);
+                        tarea.setDescripcion(descripcion);
+                        tarea.setEstimacion(estimacion);
+                        tarea.setHorasReales(horasReales);
+                        try {
+                            tareaService.modificar(tarea);
+                            JOptionPane.showMessageDialog(null, "La tarea se modificó exitosamente");
+                        } catch (ServiceException ex) {
+                            JOptionPane.showMessageDialog(null, "Error al modificar la tarea: " + ex.getMessage());
+                        }
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "Seleccione una tarea");
                 }
             }
         });
@@ -246,23 +345,22 @@ public class PanelTarea extends JPanel {
                 if (tareaSeleccionada != null){
                     try {
                         tareaService.buscarTarea(tareaSeleccionada.getId());
-                        StringBuilder tareasInfo = new StringBuilder("TAREA\n");
-                        tareasInfo.append("ID: ").append(tareaSeleccionada.getId()).append("\n");
-                        tareasInfo.append("Titulo: ").append(tareaSeleccionada.getTitulo()).append("\n");
-                        tareasInfo.append("Descripcion: ").append(tareaSeleccionada.getDescripcion()).append("\n");
-                        tareasInfo.append("Estimacion: ").append(tareaSeleccionada.getEstimacion()).append("\n");
-                        tareasInfo.append("Horas Reales: ").append(tareaSeleccionada.getHorasReales()).append("\n");
+                        StringBuilder tareasInfo = new StringBuilder("TAREA: ").append(tareaSeleccionada.getTitulo()).append("\n\n");
 
                         int idEmpleado = tareaSeleccionada.getEmpleado_id();
                         if (idEmpleado != 0) {
                             tareasInfo.append("ID de empleado asignado: ").append(tareaSeleccionada.getEmpleado_id()).append("\n");
+                            Empleado empleado = empleadoService.buscarEmpleado(tareaSeleccionada.getEmpleado_id());
+                            tareasInfo.append("Nombre del empleado: ").append(empleado.getNombre()).append("\n");
                         } else {
                             tareasInfo.append("-No hay ningun empleado asignado a esta tarea.\n");
                         }
-
+                        tareasInfo.append("\n");
                         int proyectoId = tareaSeleccionada.getIdProyecto();
                         if (proyectoId != 0){
                             tareasInfo.append("ID del proyecto: ").append(tareaSeleccionada.getIdProyecto()).append("\n");
+                            Proyecto proyecto = proyectoService.buscarProyecto(tareaSeleccionada.getIdProyecto());
+                            tareasInfo.append("Titulo proyecto: ").append(proyecto.getTitulo()).append("\n");
                         } else {
                             tareasInfo.append("-Esta tarea no esta asignada a ningun proyecto.\n");
                         }
@@ -306,6 +404,8 @@ public class PanelTarea extends JPanel {
                             historialInfo.append("Estado: ").append(historialEstado.getEstado()).append("\n");
                             historialInfo.append("Fecha: ").append(historialEstado.getFecha()).append("\n");
                             historialInfo.append("ID responsable: ").append(historialEstado.getIdResponsable()).append("\n");
+                            Empleado empleado = empleadoService.buscarEmpleado(historialEstado.getIdResponsable());
+                            historialInfo.append("Nombre del responsable: ").append(empleado.getNombre()).append("\n");
                             contador += 1;
                             historialInfo.append("\n");
                         }
@@ -318,63 +418,13 @@ public class PanelTarea extends JPanel {
                 }
             }
         });
-    }
 
-    public void modificarTarea(Tarea tarea){
-        tareaService = new TareaService();
-        panelTarea = new JPanel();
-        panelTarea.setLayout(new GridLayout(6, 2));
-
-        jTextFieldTitulo = new JTextField(tarea.getTitulo());
-        jTextFieldDescripcion = new JTextField(tarea.getDescripcion());
-        jTextFieldEstimacion = new JTextField(String.valueOf(tarea.getEstimacion()));
-        jTextFieldHorasReales = new JTextField(String.valueOf(tarea.getHorasReales()));
-
-        jButtonModificar = new JButton("Modificar");
-        jButtonSalir = new JButton("Salir");
-        jPanelBotones = new JPanel();
-
-        panelTarea.add(jlabelTitulo);
-        panelTarea.add(jTextFieldTitulo);
-        panelTarea.add(jLabelDescripcion);
-        panelTarea.add(jTextFieldDescripcion);
-        panelTarea.add(jLabelEstimacion);
-        panelTarea.add(jTextFieldEstimacion);
-        panelTarea.add(jLabelHorasReales);
-        panelTarea.add(jTextFieldHorasReales);
-
-        setLayout(new BorderLayout());
-        add(panelTarea, BorderLayout.CENTER);
-
-        jPanelBotones.add(jButtonModificar);
-        jPanelBotones.add(jButtonSalir);
-        add(jPanelBotones, BorderLayout.SOUTH);
-
-        jButtonModificar.addActionListener(new ActionListener() {
+        jButtonEmpleados.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                tarea.setTitulo(jTextFieldTitulo.getText());
-                tarea.setDescripcion(jTextFieldDescripcion.getText());
-                tarea.setEstimacion(Integer.parseInt(jTextFieldEstimacion.getText()));
-                tarea.setHorasReales(Integer.parseInt(jTextFieldHorasReales.getText()));
-                try {
-                    tareaService.modificar(tarea);
-                    JOptionPane.showMessageDialog(null, "La tarea se modificó exitosamente");
-                } catch (ServiceException ex) {
-                    JOptionPane.showMessageDialog(null, "Error al modificar la tarea" + ex.getMessage());
-                }
-                jTextFieldTitulo.setText("");
-                jTextFieldDescripcion.setText("");
-                jTextFieldEstimacion.setText("");
-                jTextFieldHorasReales.setText("");
-            }
-        });
-        jButtonSalir.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                PanelTarea panelTarea1 = new PanelTarea(panel);
-                panelTarea1.menuTareas();
-                panel.mostrar(panelTarea1);
+                PanelEmpleado panelEmpleado1 = new PanelEmpleado(panel);
+                panelEmpleado1.menuEmpleados();
+                panel.mostrar(panelEmpleado1);
             }
         });
     }

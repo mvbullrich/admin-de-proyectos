@@ -15,6 +15,7 @@ public class PanelBacklog extends JPanel {
     BacklogService backlogService;
     PanelManager panel;
     JPanel panelBacklog;
+    JLabel jLabel = new JLabel("Seleccione un backlog: ");
     JLabel jLabelId = new JLabel("ID: ");
     JTextField jTextFieldId = new JTextField();
     JLabel jLabelNombre = new JLabel("Nombre: ");
@@ -28,9 +29,8 @@ public class PanelBacklog extends JPanel {
     JButton jButtonGuardar;
     JButton jButtonEliminar = new JButton("Eliminar");
     JButton jButtonModificar = new JButton("Modificar");
-    JButton jButtonMostrar = new JButton("Mostrar datos");
+    JButton jButtonMostrar = new JButton("Ver tareas asignadas");
     JButton jButtonSalir = new JButton("Salir");
-    JButton jButtonAgregar;
     JButton jButtonBacklogs = new JButton("Mis backlogs");
 
     JPanel jPanelBotones;
@@ -51,8 +51,8 @@ public class PanelBacklog extends JPanel {
         setLayout(new BorderLayout());
         add(panelBacklog, BorderLayout.CENTER);
 
-        jPanelBotones.add(jButtonGuardar);
         jPanelBotones.add(jButtonBacklogs);
+        jPanelBotones.add(jButtonGuardar);
         jPanelBotones.add(jButtonSalir);
         add(jPanelBotones, BorderLayout.SOUTH);
 
@@ -125,35 +125,47 @@ public class PanelBacklog extends JPanel {
         });
     }
 
-    public void guardarBacklog(){
-        try{
-            String nombre = jTextFieldNombre.getText();
-            String descripcion = jTextFieldDescripcion.getText();
-            if (nombre.isEmpty() || descripcion.isEmpty()){
-                JOptionPane.showMessageDialog(null, "Se deben completar todos los campos obligatoriamente.");
+    public void guardarBacklog() {
+        try {
+            String nombre = jTextFieldNombre.getText().trim();
+            if (nombre.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "El título es obligatorio.");
                 return;
             }
-            else{
-                Backlog backlog = new Backlog();
-                backlog.setNombre(nombre);
-                backlog.setDescripcion(descripcion);
-                backlogService.guardarBacklog(backlog);
-                JOptionPane.showMessageDialog(null, "Backlog guardado exitosamente");
-                jTextFieldNombre.setText("");
-                jTextFieldDescripcion.setText("");
-            }
-        } catch (ServiceException e){
+            Backlog backlog = new Backlog();
+            backlog.setNombre(nombre);
+            String descripcion = jTextFieldDescripcion.getText().trim();
+            backlog.setDescripcion(descripcion);
+            backlogService.guardarBacklog(backlog);
+            JOptionPane.showMessageDialog(null, "Backlog guardado exitosamente");
+            jTextFieldNombre.setText("");
+            jTextFieldDescripcion.setText("");
+        } catch (ServiceException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "No se pudo guardar el backlog");
+            JOptionPane.showMessageDialog(null, "No se pudo guardar el backlog: " + e.getMessage());
         } catch (IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(null, "Error. Se deben llenar todos los campos");
+        }
+    }
+
+    public void actualizarCamposText(){
+        Backlog backlog = (Backlog) jComboBoxBacklog.getSelectedItem();
+        if (backlog != null){
+            jTextFieldId.setText(String.valueOf(backlog.getId()));
+            jTextFieldId.setEditable(false);
+            jTextFieldNombre.setText(backlog.getNombre());
+            jTextFieldDescripcion.setText(backlog.getDescripcion());
+        } else {
+            jTextFieldId.setText("");
+            jTextFieldNombre.setText("");
+            jTextFieldDescripcion.setText("");
         }
     }
 
     public void menuBacklog(){
         backlogService = new BacklogService();
         panelBacklog = new JPanel();
-        panelBacklog.setLayout(new GridLayout(6,2));
+        panelBacklog.setLayout(new GridLayout(4,2));
 
         jPanelBotones = new JPanel();
 
@@ -167,15 +179,30 @@ public class PanelBacklog extends JPanel {
         } catch (ServiceException e){
             JOptionPane.showMessageDialog(null, "Error al obtener backlogs");
         }
+        actualizarCamposText();
+        panelBacklog.add(jLabel);
         panelBacklog.add(jComboBoxBacklog);
+        panelBacklog.add(jLabelId);
+        panelBacklog.add(jTextFieldId);
+        panelBacklog.add(jLabelNombre);
+        panelBacklog.add(jTextFieldNombre);
+        panelBacklog.add(jLabelDescripcion);
+        panelBacklog.add(jTextFieldDescripcion);
         setLayout(new BorderLayout());
         add(panelBacklog, BorderLayout.CENTER);
 
-        jPanelBotones.add(jButtonEliminar);
-        jPanelBotones.add(jButtonModificar);
         jPanelBotones.add(jButtonMostrar);
+        jPanelBotones.add(jButtonModificar);
+        jPanelBotones.add(jButtonEliminar);
         jPanelBotones.add(jButtonSalir);
         add(jPanelBotones, BorderLayout.SOUTH);
+
+        jComboBoxBacklog.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actualizarCamposText();
+            }
+        });
 
         jButtonEliminar.addActionListener(new ActionListener() {
             @Override
@@ -211,11 +238,27 @@ public class PanelBacklog extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Backlog backlogSeleccionado = (Backlog) jComboBoxBacklog.getSelectedItem();
-                if (backlogSeleccionado != null){
-                    PanelBacklog panelBacklog1 = new PanelBacklog(panel);
-                    panelBacklog1.modificarBacklog(backlogSeleccionado);
-                    panel.mostrar(panelBacklog1);
-                }else {
+                String nombre = jTextFieldNombre.getText().trim();
+                String descripcion = jTextFieldDescripcion.getText().trim();
+                if (backlogSeleccionado != null) {
+                    try {
+                        if (nombre.isEmpty()) {
+                            throw new IllegalArgumentException("El título es obligatorio.");
+                        }
+                        int confirmar = JOptionPane.showConfirmDialog(null, "¿Seguro que quieres modificar este backlog?");
+                        if (confirmar == JOptionPane.YES_OPTION) {
+                            backlogSeleccionado.setId(Integer.parseInt(jTextFieldId.getText()));
+                            backlogSeleccionado.setNombre(nombre);
+                            backlogSeleccionado.setDescripcion(descripcion); // No importa si está vacío, ya que se permite
+                            backlogService.modificar(backlogSeleccionado);
+                            JOptionPane.showMessageDialog(null, "Backlog modificado exitosamente");
+                        }
+                    } catch (ServiceException ex) {
+                        JOptionPane.showMessageDialog(null, "Error al modificar el backlog: " + ex.getMessage());
+                    } catch (IllegalArgumentException ex) {
+                        JOptionPane.showMessageDialog(null, ex.getMessage());
+                    }
+                } else {
                     JOptionPane.showMessageDialog(null, "Seleccione un backlog");
                 }
             }
@@ -228,10 +271,7 @@ public class PanelBacklog extends JPanel {
                 if (backlogSeleccionado != null){
                     try {
                         backlogService.buscarBacklog(backlogSeleccionado.getId());
-                        StringBuilder infoBacklog = new StringBuilder("BACKLOG\n");
-                        infoBacklog.append("ID: ").append(backlogSeleccionado.getId()).append("\n");
-                        infoBacklog.append("Nombre: ").append(backlogSeleccionado.getNombre()).append("\n");
-                        infoBacklog.append("Descripcion: ").append(backlogSeleccionado.getDescripcion()).append("\n");
+                        StringBuilder infoBacklog = new StringBuilder("BACKLOG ").append(backlogSeleccionado.getId()).append(": ").append(backlogSeleccionado.getNombre()).append("\n");
 
                         ArrayList<Tarea> tareas = backlogService.obtenerTareasPorBacklog(backlogSeleccionado.getId());
                         if (!tareas.isEmpty()){
@@ -249,63 +289,6 @@ public class PanelBacklog extends JPanel {
                 }else {
                     JOptionPane.showMessageDialog(null, "Seleccione un backlog");
                 }
-            }
-        });
-    }
-
-    public void modificarBacklog(Backlog backlog){
-        backlogService = new BacklogService();
-        panelBacklog = new JPanel();
-        panelBacklog.setLayout(new GridLayout(3,2));
-
-        jTextFieldId = new JTextField(String.valueOf(backlog.getId()));
-        jTextFieldId.setEditable(false);
-        jTextFieldNombre = new JTextField(backlog.getNombre());
-        jTextFieldDescripcion = new JTextField(backlog.getDescripcion());
-
-        jButtonModificar = new JButton("Modificar");
-        jButtonSalir = new JButton("Atrás");
-        jPanelBotones = new JPanel();
-
-        panelBacklog.add(jLabelId);
-        panelBacklog.add(jTextFieldId);
-        panelBacklog.add(jLabelNombre);
-        panelBacklog.add(jTextFieldNombre);
-        panelBacklog.add(jLabelDescripcion);
-        panelBacklog.add(jTextFieldDescripcion);
-        setLayout(new BorderLayout());
-        add(panelBacklog, BorderLayout.CENTER);
-
-        jPanelBotones.add(jButtonModificar);
-        jPanelBotones.add(jButtonSalir);
-        add(jPanelBotones, BorderLayout.SOUTH);
-
-        jButtonModificar.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String nombre = jTextFieldNombre.getText();
-                String descripcion = jTextFieldDescripcion.getText();
-                if (nombre.isEmpty() || descripcion.isEmpty()) {
-                    JOptionPane.showMessageDialog(null, "Error. Todos los campos deben estar llenos");
-                } else {
-                    try {
-                        backlog.setNombre(nombre);
-                        backlog.setDescripcion(descripcion);
-                        backlogService.modificar(backlog);
-                        JOptionPane.showMessageDialog(null, "Backlog modificado exitosamente");
-                    } catch (ServiceException ex){
-                        JOptionPane.showMessageDialog(null, "Error al modificar el backlog");
-                    }
-                }
-            }
-        });
-
-        jButtonSalir.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                PanelBacklog panelBacklog1 = new PanelBacklog(panel);
-                panelBacklog1.menuBacklog();
-                panel.mostrar(panelBacklog1);
             }
         });
     }

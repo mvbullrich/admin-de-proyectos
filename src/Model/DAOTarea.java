@@ -288,7 +288,7 @@ public class DAOTarea implements DAO<Tarea> {
         try{
             Class.forName(DB_JDBC_DRIVER);
             connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-            preparedStatement = connection.prepareStatement("SELECT horasreales, empleado_id FROM Tarea WHERE id_proyecto=?");
+            preparedStatement = connection.prepareStatement("SELECT * FROM Tarea WHERE id_proyecto=?");
             preparedStatement.setInt(1, idProyecto);
             ResultSet resultSet = preparedStatement.executeQuery();
 
